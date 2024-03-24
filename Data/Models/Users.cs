@@ -1,4 +1,6 @@
 ﻿using System.Data;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Data.Models;
 
@@ -13,5 +15,4 @@ public class Users : Base
 
     public int? RoleId { get; set; }
     public Role? Role { get; set; }
-
 }
