@@ -13,6 +13,16 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<KeeperContext>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("MyPolicy", builder =>
+    {
+        builder.WithOrigins("https://localhost:7163") // Замените на домен вашего Blazor WebAssembly приложения
+               .AllowAnyHeader()
+               .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -27,5 +37,7 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.UseCors("MyPolicy");
 
 app.Run();

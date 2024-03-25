@@ -16,37 +16,43 @@ namespace Service.Repositories
             _db = db;
         }
 
-        public async Task Create(Users user)
+        public Users SignUp(Users user)
         {
             user.Password = UserExtension.HashPassword(user.Password); // Используйте имя класса для вызова статического метода
+            user.RoleId = 1;
 
             _db.Users.Add(user);
-            await _db.SaveChangesAsync(); // Используйте асинхронный метод для сохранения изменений
+            _db.SaveChanges(); // Используйте асинхронный метод для сохранения изменений
+
+            return user;
         }
 
-        public async Task<Users> Get(int id)
+        public Users GetUser(int id)
         {
-            return await _db.Users.FindAsync(id);
+            return _db.Users.Find(id);
         }
 
-        public async IAsyncEnumerable<Users> GetAll()
+        public List<Users> GetAllUsers()
         {
-            var allUsers = await _db.Users.ToListAsync();
-            foreach (var user in allUsers)
-            {
-                yield return user;
-            }
+            return _db.Users.ToList();
         }
 
-        public async Task Remove(int id)
+        public void Remove(int id)
         {
-            var user = await _db.Users.FindAsync(id);
+            Users user = _db.Users.Find(id);
 
             _db.Users.Remove(user);
-            await _db.SaveChangesAsync();
+            _db.SaveChangesAsync();
         }
 
+        public Users Auth(Users InputAuth)
+        {
+            InputAuth.Password = UserExtension.HashPassword(InputAuth.Password);
 
+            var User = _db.Users.Where(u => u.Login == InputAuth.Login && u.Password == InputAuth.Password).FirstOrDefault<Users>();
+            User.Role = _db.Role.Where(p => p.Id == User.RoleId).FirstOrDefault();
+            return User;
+        }
     }
 
     public class UserExtension

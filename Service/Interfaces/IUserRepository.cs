@@ -4,11 +4,13 @@ namespace Service.Interfaces;
 
 public interface IUserRepository
 {
-    Task Create(Users user);
+    Users SignUp(Users user);
 
-    IAsyncEnumerable<Users> GetAll();
+    Users Auth(Users user);
 
-    Task Remove(int id);
+    List<Users> GetAllUsers();
 
-    Task<Users> Get(int id);
+    void Remove(int id);
+
+    Users GetUser(int id);
 }

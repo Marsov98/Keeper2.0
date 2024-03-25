@@ -1,0 +1,83 @@
+﻿@page "/Auth"
+@using Data.Models
+@using Microsoft.AspNetCore.Mvc
+@using Microsoft.AspNetCore.Http.HttpResults
+@using System.Net
+@using System.Net.Http
+@inject HttpClient Http
+
+@inject IHttpContextAccessor HttpContextAccessor
+@inject NavigationManager manager
+
+@rendermode RenderMode.InteractiveServer
+
+<PageTitle>Авторизация</PageTitle>
+
+<html>
+
+<head>
+    <link rel="stylesheet" href="~/css/site.css" />
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+
+</head>
+
+<body>
+    <center>
+        <div class="wrapper">
+
+
+            <h1>Авторизация</h1>
+            <EditForm class="form-signin" Model=@InputAuth OnSubmit="@Submit" FormName="uniqueFormName">
+
+                <input type="hidden" @bind-value="InputAuth.Id" />
+
+                <input type="text" @bind-value="InputAuth.Login" placeholder="Имя пользователя" requaired autofocus>
+
+                <p></p>
+
+                <input type="password" @bind-value="InputAuth.Password" placeholder="Пароль" requaired autofocus>
+
+                <p></p>
+
+                <input class="btn btn-lg btn-primary btn-block" type="submit" value="Войти" />
+            </EditForm>
+            <div class="register_link">
+                <p>
+                    Нет аккаунта?
+                    <a asp-page="SignUp">Зарегистрироваться</a>
+                </p>
+            </div>
+        </div>
+    </center>
+
+</body>
+
+</html>
+
+@code {
+
+
+    Users InputAuth = new();
+
+    public async Task Submit()
+    {
+        HttpClient httpClient = new();
+        var response = await Http.PostAsJsonAsync($"https://localhost:7244/api/User/Auth", InputAuth);
+        // если объект на сервере найден, то есть статусный код равен 404
+        if (response.IsSuccessStatusCode)
+        {
+            Users person = await response.Content.ReadFromJsonAsync<Users>();
+            if (person != null)
+            {
+                var httpContext = HttpContextAccessor.HttpContext;
+                var session = httpContext.Session;
+                session.SetString("SampleSession", $"{person.Id}");
+                manager.NavigateTo("Home");
+            }
+        }
+        else
+        {
+            await response.Content.ReadAsStringAsync();
+        }
+    }
+}
