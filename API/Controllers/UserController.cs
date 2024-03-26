@@ -28,12 +28,12 @@ public class UserController : Controller
     #region Регистрация
 
     [HttpPost("SignUp")]
-    public async Task<ActionResult> SignUp([FromBody] Users InputSignUp)
+    public ActionResult SignUp([FromBody] Users InputSignUp)
     {
         try
         {
             _userRepository.SignUp(InputSignUp);
-            return CreatedAtAction("GetUser", new { id = InputSignUp.Id }, InputSignUp);
+            return Ok();
         }
         catch (Exception ex)
         {
@@ -44,7 +44,7 @@ public class UserController : Controller
 
     #region Авторизация
     [HttpPost("Auth")]
-    public async Task<ActionResult<Users>> Auth([FromBody] Users InputAuth)
+    public ActionResult<Users> Auth([FromBody] Users InputAuth)
     {
         try
         {

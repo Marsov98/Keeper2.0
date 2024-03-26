@@ -2,6 +2,7 @@
 @using Data.Models
 @using Microsoft.AspNetCore.Mvc
 @using Microsoft.AspNetCore.Http.HttpResults
+@using Microsoft.AspNetCore.Components.Forms
 @using System.Net
 @using System.Net.Http
 @inject HttpClient Http
@@ -27,20 +28,24 @@
 
 
             <h1>Авторизация</h1>
-            <EditForm class="form-signin" Model=@InputAuth OnSubmit="@Submit" FormName="uniqueFormName">
-
-                <input type="hidden" @bind-value="InputAuth.Id" />
-
-                <input type="text" @bind-value="InputAuth.Login" placeholder="Имя пользователя" requaired autofocus>
-
-                <p></p>
-
-                <input type="password" @bind-value="InputAuth.Password" placeholder="Пароль" requaired autofocus>
-
-                <p></p>
-
-                <input class="btn btn-lg btn-primary btn-block" type="submit" value="Войти" />
-            </EditForm>
+            <form method="post" @onsubmit="Submit" @formname="starship-plain-form">
+                <AntiforgeryToken />
+                <div>
+                    <label>
+                        Identifier:
+                        <InputText @bind-Value="InputAuth!.Login" />
+                        <InputText @bind-Value="InputAuth!.Password" />
+                    </label>
+                </div>
+                <div>
+                    <button type="submit">Submit</button>
+                </div>
+            </form>
+            @* <EditForm class="form-signin" OnSubmit="@Submit" FormName="uniq">
+            <InputText @bind-Value="InputAuth!.Login" class="m-2 p-2 form-control" placeholder="Имя пользователя" />
+            <InputText @bind-Value="InputAuth!.Password" class="m-2 p-2 form-control" placeholder="Пароль" />
+            <input type="submit" class="m-2 p-2 btn btn-primary" value="Войти" />
+            </EditForm> *@
             <div class="register_link">
                 <p>
                     Нет аккаунта?
@@ -55,18 +60,20 @@
 </html>
 
 @code {
+    [SupplyParameterFromForm]
+    private Users InputAuth { get; set; }
 
+    protected override void OnInitialized() => InputAuth ??= new();
 
-    Users InputAuth = new();
-
-    public async Task Submit()
+    private async void Submit()
     {
-        HttpClient httpClient = new();
-        var response = await Http.PostAsJsonAsync($"https://localhost:7244/api/User/Auth", InputAuth);
+        Http.Timeout = TimeSpan.FromMinutes(30);
+
+        using var response = await Http.PostAsJsonAsync($"https://localhost:7244/api/User/Auth", InputAuth);
         // если объект на сервере найден, то есть статусный код равен 404
         if (response.IsSuccessStatusCode)
         {
-            Users person = await response.Content.ReadFromJsonAsync<Users>();
+            var person = await response.Content.ReadFromJsonAsync<Users>();
             if (person != null)
             {
                 var httpContext = HttpContextAccessor.HttpContext;
@@ -79,5 +86,6 @@
         {
             await response.Content.ReadAsStringAsync();
         }
+
     }
 }
