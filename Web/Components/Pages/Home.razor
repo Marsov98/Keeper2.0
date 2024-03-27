@@ -1,42 +1,42 @@
-﻿@page "/"
+﻿@page "/Home"
+@page "/"
+@using Data.Models
+@using Microsoft.Extensions.Caching.Memory
 
 @inject IHttpContextAccessor HttpContextAccessor
 @inject NavigationManager manager
+@inject IMemoryCache Cache
 
 <PageTitle>Home</PageTitle>
 
 <body>
     <center>
-        @{
-            
+
             <h1 style="color: #fff">Тип заявки</h1>
             <a class="btn btn-lg btn-primary btn-block" >
-                <img width="300" height="300" src="~/image/profile.jpg" />
+                <img width="300" height="300" src="~/one.png" />
                 <p></p>
                 <h4>Личная</h4>
             </a>
             <a class="btn btn-lg btn-primary btn-block" >
-                <img width="300" height="300" src="~/image/team.jpg" />
+                <img width="300" height="300" src="~/group.png" />
                 <p></p>
                 <h4>Групповая</h4>
             </a>
             <p></p>
             <a class="btn btn-lg btn-primary btn-block" >История заявок</a>
-        }
+
     </center>
 
 </body>
 
 @code {
+    public Users user = new();
     protected override void OnInitialized()
     {
-        var httpContext = HttpContextAccessor.HttpContext;
-        var session = httpContext.Session;
-        var sessionId = session.GetString("SampleSession");
-        if (sessionId == null)
+        if (Cache.TryGetValue("User", out Users users))
         {
-            manager.NavigateTo("Auth");
+            user = users;
         }
-        manager.NavigateTo("/");
     }
 }

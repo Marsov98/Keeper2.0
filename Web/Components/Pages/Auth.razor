@@ -6,11 +6,11 @@
 @using System.Net
 @using Microsoft.AspNetCore.Http
 @using System.Net.Http
+@using Microsoft.Extensions.Caching.Memory
 
 @inject IHttpContextAccessor HttpContextAccessor
-@inject NavigationManager manager
-
-@rendermode RenderMode.InteractiveServer
+@inject IMemoryCache Cache
+@inject NavigationManager NavigationManager
 
 <PageTitle>Авторизация</PageTitle>
 
@@ -78,6 +78,20 @@
         {
             var person = await response.Content.ReadFromJsonAsync<Users>();
             Console.WriteLine($"ID пользователя - {person.Id}");
+            var cacheEntryOptions = new MemoryCacheEntryOptions()
+            .SetSlidingExpiration(TimeSpan.FromMinutes(5)) // Устанавливаем скользящее истечение срока действия
+            .SetAbsoluteExpiration(TimeSpan.FromHours(1)); // Устанавливаем абсолютное истечение срока действия
+
+            Cache.Set("User", person, cacheEntryOptions);
+            try
+            {
+                NavigationManager.NavigateTo("/Home");
+            }
+            catch (Exception ex) when (ex is not NavigationException)
+            {
+                Console.WriteLine($"ошибка - {ex}");
+            }
+
         }
         else
         {

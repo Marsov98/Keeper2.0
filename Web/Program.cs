@@ -9,7 +9,8 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddHttpClient();
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddDistributedMemoryCache(); // Добавляем встроенную в памяти реализацию IDistributedCache
+builder.Services.AddMemoryCache();
+builder.Services.AddDistributedMemoryCache();// Добавляем встроенную в памяти реализацию IDistributedCache
 builder.Services.AddSession();
 builder.Services.AddSession(options =>
 {
