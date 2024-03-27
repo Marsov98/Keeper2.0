@@ -4,8 +4,8 @@
 @using Microsoft.AspNetCore.Http.HttpResults
 @using Microsoft.AspNetCore.Components.Forms
 @using System.Net
+@using Microsoft.AspNetCore.Http
 @using System.Net.Http
-@inject HttpClient Http
 
 @inject IHttpContextAccessor HttpContextAccessor
 @inject NavigationManager manager
@@ -63,10 +63,13 @@
     [SupplyParameterFromForm]
     private Users InputAuth { get; set; }
 
+    static HttpClient Http = new HttpClient();
+
     protected override void OnInitialized() => InputAuth ??= new();
 
     private async void Submit()
     {
+
         Http.Timeout = TimeSpan.FromMinutes(30);
 
         using var response = await Http.PostAsJsonAsync($"https://localhost:7244/api/User/Auth", InputAuth);
@@ -74,13 +77,7 @@
         if (response.IsSuccessStatusCode)
         {
             var person = await response.Content.ReadFromJsonAsync<Users>();
-            if (person != null)
-            {
-                var httpContext = HttpContextAccessor.HttpContext;
-                var session = httpContext.Session;
-                session.SetString("SampleSession", $"{person.Id}");
-                manager.NavigateTo("Home");
-            }
+            Console.WriteLine($"ID пользователя - {person.Id}");
         }
         else
         {
