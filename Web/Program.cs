@@ -1,4 +1,7 @@
+using Data;
 using Data.Models;
+using Service.Interfaces;
+using Service.Repositories;
 using Web.Components;
 
 
@@ -7,14 +10,20 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
 builder.Services.AddHttpClient();
 builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddScoped<KeeperContext>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+
 builder.Services.AddMemoryCache();
 builder.Services.AddDistributedMemoryCache();// Добавляем встроенную в памяти реализацию IDistributedCache
+
 builder.Services.AddSession();
 builder.Services.AddSession(options =>
 {
-    options.Cookie.Name = "SampleSession";
+    options.Cookie.Name = "UserId";
     //options.IdleTimeout = TimeSpan.FromSeconds(10);
     options.Cookie.IsEssential = true;
 });

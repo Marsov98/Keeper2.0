@@ -2,16 +2,28 @@
 @page "/"
 @using Data.Models
 @using Microsoft.Extensions.Caching.Memory
+@using Microsoft.Net.Http.Headers
+@using Service.Interfaces
 
 @inject IHttpContextAccessor HttpContextAccessor
+@inject IUserRepository userRepository
 @inject NavigationManager manager
 @inject IMemoryCache Cache
 
 <PageTitle>Home</PageTitle>
 
+<head>
+    
+</head>
 <body>
+    
     <center>
-
+        @if (ShowNotification)
+        {
+            <div class="notification">
+                Добро пожаловать, @Users.Name
+            </div>
+        }
             <h1 style="color: #fff">Тип заявки</h1>
             <a class="btn btn-lg btn-primary btn-block" >
                 <img width="300" height="300" src="~/one.png" />
@@ -31,21 +43,35 @@
 </body>
 
 @code {
-    protected override void OnAfterRender(bool firstRender)
+    public Users Users = new();
+
+    private bool ShowNotification { get; set; }
+    private string NotificationMessage { get; set; }
+
+    /*protected override void OnAfterRender(bool firstRender)
     {
         if (firstRender)
         {
-            var httpContext = HttpContextAccessor.HttpContext;
-            var session = httpContext.Session;
-            var sessionId = session.GetString("SampleSession");
-            if (sessionId == null)
+            string cookie = HttpContextAccessor.HttpContext?.Request?.Cookies["UserId"];
+            if (cookie != null)
             {
-                manager.NavigateTo("Auth");
+                Users = userRepository.GetUser(Convert.ToInt32(cookie));
+                ShowNotification = true;
+                manager.NavigateTo("/");
             }
             else
             {
-                manager.NavigateTo("/");
+                manager.NavigateTo("Auth");
             }
+        }
+    }*/
+    protected override void OnInitialized()
+    {
+        string cookie = HttpContextAccessor.HttpContext?.Request?.Cookies["UserId"];
+        if (cookie != null)
+        {
+            Users = userRepository.GetUser(Convert.ToInt32(cookie));
+            ShowNotification = true;
         }
     }
 }
