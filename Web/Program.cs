@@ -25,6 +25,7 @@ builder.Services.AddServerSideBlazor().AddHubOptions(o =>
 var app = builder.Build();
 app.UseSession();
 
+
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {

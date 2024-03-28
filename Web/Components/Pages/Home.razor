@@ -31,12 +31,21 @@
 </body>
 
 @code {
-    public Users user = new();
-    protected override void OnInitialized()
+    protected override void OnAfterRender(bool firstRender)
     {
-        if (Cache.TryGetValue("User", out Users users))
+        if (firstRender)
         {
-            user = users;
+            var httpContext = HttpContextAccessor.HttpContext;
+            var session = httpContext.Session;
+            var sessionId = session.GetString("SampleSession");
+            if (sessionId == null)
+            {
+                manager.NavigateTo("Auth");
+            }
+            else
+            {
+                manager.NavigateTo("/");
+            }
         }
     }
 }

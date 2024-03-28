@@ -1,5 +1,6 @@
 ﻿@page "/Auth"
 @using Data.Models
+@using Microsoft.AspNetCore.Http.Extensions
 @using Microsoft.AspNetCore.Mvc
 @using Microsoft.AspNetCore.Http.HttpResults
 @using Microsoft.AspNetCore.Components.Forms
@@ -19,42 +20,41 @@
 <head>
     <link rel="stylesheet" href="~/css/site.css" />
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
 <body>
-    <center>
-        <div class="wrapper">
-
-
-            <h1>Авторизация</h1>
-            <form method="post" @onsubmit="Submit" @formname="starship-plain-form">
-                <AntiforgeryToken />
-                <div>
-                    <label>
-                        Identifier:
-                        <InputText @bind-Value="InputAuth!.Login" />
-                        <InputText @bind-Value="InputAuth!.Password" />
-                    </label>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h1>Авторизация</h1>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" @onsubmit="Submit" @formname="starship-plain-form">
+                            <AntiforgeryToken />
+                            <div class="form-group">
+                                <label for="Login">Логин:</label>
+                                <InputText id="Login" @bind-Value="InputAuth!.Login" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label for="Password">Пароль:</label>
+                                <InputText id="Password" @bind-Value="InputAuth!.Password" class="form-control" type="password" />
+                            </div>
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </form>
+                        <div class="register_link">
+                            <p>
+                                Нет аккаунта?
+                                <a asp-page="SignUp">Зарегистрироваться</a>
+                            </p>
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <button type="submit">Submit</button>
-                </div>
-            </form>
-            @* <EditForm class="form-signin" OnSubmit="@Submit" FormName="uniq">
-            <InputText @bind-Value="InputAuth!.Login" class="m-2 p-2 form-control" placeholder="Имя пользователя" />
-            <InputText @bind-Value="InputAuth!.Password" class="m-2 p-2 form-control" placeholder="Пароль" />
-            <input type="submit" class="m-2 p-2 btn btn-primary" value="Войти" />
-            </EditForm> *@
-            <div class="register_link">
-                <p>
-                    Нет аккаунта?
-                    <a asp-page="SignUp">Зарегистрироваться</a>
-                </p>
             </div>
         </div>
-    </center>
-
+    </div>
 </body>
 
 </html>
@@ -67,36 +67,28 @@
 
     protected override void OnInitialized() => InputAuth ??= new();
 
-    private async void Submit()
+    private async Task Submit()
     {
-
-        Http.Timeout = TimeSpan.FromMinutes(30);
-
+       // Http.Timeout = TimeSpan.FromMinutes(30);
         using var response = await Http.PostAsJsonAsync($"https://localhost:7244/api/User/Auth", InputAuth);
-        // если объект на сервере найден, то есть статусный код равен 404
         if (response.IsSuccessStatusCode)
         {
             var person = await response.Content.ReadFromJsonAsync<Users>();
             Console.WriteLine($"ID пользователя - {person.Id}");
-            var cacheEntryOptions = new MemoryCacheEntryOptions()
-            .SetSlidingExpiration(TimeSpan.FromMinutes(5)) // Устанавливаем скользящее истечение срока действия
-            .SetAbsoluteExpiration(TimeSpan.FromHours(1)); // Устанавливаем абсолютное истечение срока действия
+            // Добавление cookie
+            var cookieOptions = new CookieOptions
+                {
+                    HttpOnly = true, // Установка флага HttpOnly для защиты от кражи cookie через JavaScript
+                    Secure = true, // Установка флага Secure для передачи cookie только по защищенному соединению
+                    SameSite = SameSiteMode.Strict // Установка политики SameSite для предотвращения атак CSRF
+                };
+            HttpContextAccessor.HttpContext.Response.Cookies.Append("UserId", person.Id.ToString(), cookieOptions);
 
-            Cache.Set("User", person, cacheEntryOptions);
-            try
-            {
-                NavigationManager.NavigateTo("/Home");
-            }
-            catch (Exception ex) when (ex is not NavigationException)
-            {
-                Console.WriteLine($"ошибка - {ex}");
-            }
-
+            manager.NavigateTo("/");
         }
         else
         {
             await response.Content.ReadAsStringAsync();
         }
-
     }
 }
