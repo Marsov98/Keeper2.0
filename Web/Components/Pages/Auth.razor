@@ -11,7 +11,7 @@
 
 @inject IHttpContextAccessor HttpContextAccessor
 @inject IMemoryCache Cache
-@inject NavigationManager NavigationManager
+@inject NavigationManager manager
 
 <PageTitle>Авторизация</PageTitle>
 
@@ -69,7 +69,7 @@
 
     private async Task Submit()
     {
-       // Http.Timeout = TimeSpan.FromMinutes(30);
+        // Http.Timeout = TimeSpan.FromMinutes(30);
         using var response = await Http.PostAsJsonAsync($"https://localhost:7244/api/User/Auth", InputAuth);
         if (response.IsSuccessStatusCode)
         {
