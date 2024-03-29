@@ -53,6 +53,23 @@ namespace Service.Repositories
             User.Role = _db.Role.Where(p => p.Id == User.RoleId).FirstOrDefault();
             return User;
         }
+
+        public Employees CreateEmployees(Employees employees)
+        {
+            employees.Division = _db.Division.Where(p => p.Id == employees.DivisionId).FirstOrDefault();
+            _db.Employees.Add(employees);
+            _db.SaveChanges(); // Используйте асинхронный метод для сохранения изменений
+
+            return employees;
+        }
+
+        public Division CreateDivision(Division division)
+        {
+            _db.Division.Add(division);
+            _db.SaveChanges(); // Используйте асинхронный метод для сохранения изменений
+
+            return division; ;
+        }
     }
 
     public class UserExtension

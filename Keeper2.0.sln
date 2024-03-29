@@ -27,6 +27,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Service", "Service\Service.
 		{436720F7-F53C-449D-BDE5-46B58071F0F0} = {436720F7-F53C-449D-BDE5-46B58071F0F0}
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebSite", "WebSite\WebSite.csproj", "{5D38F943-F95D-46E6-AB3D-1396D7A025ED}"
+	ProjectSection(ProjectDependencies) = postProject
+		{436720F7-F53C-449D-BDE5-46B58071F0F0} = {436720F7-F53C-449D-BDE5-46B58071F0F0}
+		{E02D2D3D-7C30-4DF4-9629-6E6EEA5698D6} = {E02D2D3D-7C30-4DF4-9629-6E6EEA5698D6}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,6 +61,10 @@ Global
 		{E02D2D3D-7C30-4DF4-9629-6E6EEA5698D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E02D2D3D-7C30-4DF4-9629-6E6EEA5698D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E02D2D3D-7C30-4DF4-9629-6E6EEA5698D6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5D38F943-F95D-46E6-AB3D-1396D7A025ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D38F943-F95D-46E6-AB3D-1396D7A025ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D38F943-F95D-46E6-AB3D-1396D7A025ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D38F943-F95D-46E6-AB3D-1396D7A025ED}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

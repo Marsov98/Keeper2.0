@@ -42,6 +42,40 @@ public class UserController : Controller
     }
     #endregion
 
+    #region Регистрация сотрудника
+
+    [HttpPost("CreateEmployees")]
+    public ActionResult<Employees> CreateEmployees([FromBody] Employees employee)
+    {
+        try
+        {
+            _userRepository.CreateEmployees(employee);
+            return Ok(employee);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+    #endregion
+
+    #region Добавление подразделения
+
+    [HttpPost("CreateDivision")]
+    public ActionResult<Division> CreateDivision([FromBody] Division division)
+    {
+        try
+        {
+            _userRepository.CreateDivision(division);
+            return Ok(division);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+    #endregion
+
     #region Авторизация
     [HttpPost("Auth")]
     public ActionResult<Users> Auth([FromBody] Users InputAuth)

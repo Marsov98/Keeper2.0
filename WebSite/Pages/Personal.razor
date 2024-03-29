@@ -1,0 +1,120 @@
+﻿@page "/Personal"
+@using Data.Models
+@using Service.Interfaces
+@using Data.Enums;
+@using Service.Repositories
+@using Syncfusion.Blazor.Buttons
+
+@inject IHttpContextAccessor HttpContextAccessor
+@inject NavigationManager manager
+@inject StatementRepository StatementRepository
+
+<html>
+
+<head>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <a class="btn btn-primary" href="/Home">Главная</a>
+    @if (Division == null && Employees == null)
+    {
+        <p><em>Загрузка...</em></p>
+    }
+    else
+    {
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h1>Персональная заявка</h1>
+                        </div>
+                        <div class="card-body">
+                            <form method="post" class="form-signin" @onsubmit="Submit" @formname="starship-plain-form">
+                                <AntiforgeryToken />
+                                <div class="form-group">
+                                    <center>
+                                        <h3>Информация для пропуска</h3>
+                                        <center><h4>Срок действия заявки:</h4></center>
+                                        <h5>
+                                            C*
+                                            <InputDate @bind-Value="@InputStatement!.BeginDate" required="required" />
+                                            по
+                                            <InputDate @bind-Value="@InputStatement!.EndDate" required="required" />
+                                        </h5>
+                                        <center><h4>Цель посещения:</h4></center>
+                                        <InputSelect @bind-Value="@InputStatement!.Target">
+                                            <option value="">Выберите цель</option>
+                                            <option value="хочется">хочется</option>
+                                            <option value="пожалуйста">пожалуйста</option>
+                                            <option value="пустите">пустите</option>
+                                        </InputSelect>
+                                    </center>
+                                </div>
+                                <div class="form-group">
+                                    <center>
+                                        <h3>Принимающая сторона</h3>
+                                        <h5>Подразделение*:</h5>
+                                        <InputSelect class="form-control" @bind-Value="@DivisionId">
+                                            @foreach (var p in Division)
+                                            {
+                                                <option value="@p.Id">@p.Info</option>
+                                            }
+                                        </InputSelect>
+                                        <p>Подразделение*: @DivisionId</p>
+                                        <h5>ФИО*:</h5>
+                                        <InputSelect @bind-Value="@SelectedEmployeeId" role="status">
+                                            @foreach (var p in Employees)
+                                            {
+                                                if (DivisionId == p.DivisionId)
+                                                {
+                                                    <option value="@p.Id">@p.Name</option>
+                                                }
+                                            }
+                                        </InputSelect>
+                                    </center>
+                                </div>
+                                <input class="btn btn-primary" type="submit" value="Оформить заявку" />
+                            </form>
+                            <div class="register_link">
+                                <p>
+                                    Нет аккаунта?
+                                    <a asp-page="SignUp">Зарегистрироваться</a>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</body>
+
+</html>
+
+@code {
+    [SupplyParameterFromForm]
+    public Statement InputStatement { get; set; }
+
+    private int SelectedEmployeeId = 0;
+    private int DivisionId = 1;
+
+    private List<Employees>? Employees;
+    private List<Division>? Division;
+
+    static HttpClient Http = new HttpClient();
+
+    protected override void OnInitialized()
+    {
+        InputStatement ??= new();
+        Division = StatementRepository.GetDivision() ?? new List<Division>();
+        Employees = StatementRepository.GetEmployees() ?? new List<Employees>();
+    }
+
+    private async Task Submit()
+    {
+        InputStatement.EmployeeId = SelectedEmployeeId;
+    }
+}

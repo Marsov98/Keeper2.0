@@ -12,12 +12,13 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<KeeperContext>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IStatementRepository, StatementRepository>();
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("MyPolicy", builder =>
     {
-        builder.WithOrigins("https://localhost:7163") // Замените на домен вашего Blazor WebAssembly приложения
+        builder.WithOrigins("https://localhost:7177") // Замените на домен вашего Blazor WebAssembly приложения
                .AllowAnyHeader()
                .AllowAnyMethod();
     });
