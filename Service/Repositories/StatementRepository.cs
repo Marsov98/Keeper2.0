@@ -17,14 +17,15 @@ namespace Service.Repositories
             _db = db;
         }
 
-        public Statement CreateGroup(List<Statement> Statement)
+        public void CreateGroup(List<Statement> Statement)
         {
             throw new NotImplementedException();
         }
 
-        public Statement CreateIndivid(Statement Statement)
+        public void CreateIndivid(Statement Statement)
         {
-            throw new NotImplementedException();
+            _db.Statement.Add(Statement);
+            _db.SaveChanges();
         }
 
         public List<Division> GetDivision()
@@ -51,7 +52,14 @@ namespace Service.Repositories
 
         public List<Statement> GetStatement()
         {
-            throw new NotImplementedException();
+            var Statement = _db.Statement.ToList();
+            List<Employees> Employees = GetEmployees();
+            int Count = Statement.Count();
+            for (int i = 0; i < Count; i++)
+            {
+                Statement[i].Employees = Employees[Statement[i].EmployeeId - 1];
+            }
+            return Statement;
         }
     }
 }

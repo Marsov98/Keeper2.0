@@ -1,0 +1,81 @@
+﻿@page "/History"
+@using Data.Models;
+
+@inject IHttpContextAccessor HttpContextAccessor
+@inject NavigationManager manager
+
+<html>
+<head>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link href='~/css/site.css' rel='stylesheet'>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <a class="btn btn-primary" href="/Home">Главная</a>
+    @if (Statements == null)
+    {
+        <p><em>Загрузка...</em></p>
+    }
+    else
+    {
+        <center>
+            <div style="background: green; border-radius: 8px">
+                <h2>История заявок</h2>
+                <InputSelect @bind-Value="Select">
+                    <option value="0">Все заявки</option>
+                    <option value="1">Индивидуальные</option>
+                    <option value="2">Групповые</option>
+                </InputSelect>
+            </div>
+        </center>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <td><h3>ID</h3></td>
+                    <td><h3>Подразделение</h3></td>
+                    <td><h3>Дата</h3></td>
+                    <td><h3>Время</h3></td>
+                    <td><h3>Статус</h3></td>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var statements in Statements)
+                {
+                    <tr>
+                        <td>
+                            <h3>@statements.Id</h3>
+                        </td>
+                        <td>
+                            <h3>@statements.Employees.Division.Info</h3>
+                        </td>
+                        <td>
+                            <h3>@statements.BeginDate</h3>
+                        </td>
+                        <td>
+                            <h3>@statements.EndDate</h3>
+                        </td>
+                        <td>
+                            <h3>@statements.Status</h3>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</body>
+</html>
+@code {
+    int Select = 0;
+    public List<Statement> Statements = new List<Statement>();
+    static HttpClient Http = new HttpClient();
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var response = await Http.GetAsync($"https://localhost:7244/api/Statement/GetStatement");
+        if (response.IsSuccessStatusCode)
+        {
+            Statements = await response.Content.ReadFromJsonAsync<List<Statement>>();
+        }
+    }
+}

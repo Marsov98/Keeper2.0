@@ -1,21 +1,23 @@
 ﻿@page "/Personal"
 @using Data.Models
 @using Service.Interfaces
-@using Data.Enums;
 @using Service.Repositories
 @using Syncfusion.Blazor.Buttons
+@using Microsoft.AspNetCore.Components.Forms
+@using Append.Blazor.Notifications
 
+@inject INotificationService NotificationService
 @inject IHttpContextAccessor HttpContextAccessor
 @inject NavigationManager manager
 @inject StatementRepository StatementRepository
 
-<html>
 
+<html>
 <head>
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link href='~/css/site.css' rel='stylesheet'>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
-
 <body>
     <a class="btn btn-primary" href="/Home">Главная</a>
     @if (Division == null && Employees == null)
@@ -24,79 +26,161 @@
     }
     else
     {
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header">
-                            <h1>Персональная заявка</h1>
-                        </div>
-                        <div class="card-body">
-                            <form method="post" class="form-signin" @onsubmit="Submit" @formname="starship-plain-form">
-                                <AntiforgeryToken />
-                                <div class="form-group">
-                                    <center>
-                                        <h3>Информация для пропуска</h3>
-                                        <center><h4>Срок действия заявки:</h4></center>
-                                        <h5>
-                                            C*
-                                            <InputDate @bind-Value="@InputStatement!.BeginDate" required="required" />
-                                            по
-                                            <InputDate @bind-Value="@InputStatement!.EndDate" required="required" />
-                                        </h5>
-                                        <center><h4>Цель посещения:</h4></center>
-                                        <InputSelect @bind-Value="@InputStatement!.Target">
-                                            <option value="">Выберите цель</option>
-                                            <option value="хочется">хочется</option>
-                                            <option value="пожалуйста">пожалуйста</option>
-                                            <option value="пустите">пустите</option>
-                                        </InputSelect>
-                                    </center>
-                                </div>
-                                <div class="form-group">
-                                    <center>
-                                        <h3>Принимающая сторона</h3>
-                                        <h5>Подразделение*:</h5>
-                                        <InputSelect class="form-control" @bind-Value="@DivisionId">
-                                            @foreach (var p in Division)
-                                            {
-                                                <option value="@p.Id">@p.Info</option>
-                                            }
-                                        </InputSelect>
-                                        <p>Подразделение*: @DivisionId</p>
-                                        <h5>ФИО*:</h5>
-                                        <InputSelect @bind-Value="@SelectedEmployeeId" role="status">
-                                            @foreach (var p in Employees)
-                                            {
-                                                if (DivisionId == p.DivisionId)
-                                                {
-                                                    <option value="@p.Id">@p.Name</option>
-                                                }
-                                            }
-                                        </InputSelect>
-                                    </center>
-                                </div>
-                                <input class="btn btn-primary" type="submit" value="Оформить заявку" />
-                            </form>
-                            <div class="register_link">
-                                <p>
-                                    Нет аккаунта?
-                                    <a asp-page="SignUp">Зарегистрироваться</a>
-                                </p>
-                            </div>
+        <center>
+            <div style="width: 1030px">
+                <form method="post" class="form-signin" @onsubmit="Submit" @formname="starship-plain-form">
+                    <AntiforgeryToken />
+                    <h2>Форма записи на посещение мероприятия</h2>
+                    <div id="block1" class="info">
+                        <center>
+                            <h3>Информация для пропуска</h3>
+                            <center><h4>Срок действия заявки:</h4></center>
+                            <h5>
+                                C*
+                                <InputDate @bind-Value="@InputStatement!.BeginDate" required="required" />
+                                по
+                                <InputDate @bind-Value="@InputStatement!.EndDate" required="required" />
+                            </h5>
+                            <center><h4>Цель посещения:</h4></center>
+                            <InputSelect @bind-Value="@InputStatement!.Target">
+                                <option value="">Выберите цель</option>
+                                <option value="хочется">хочется</option>
+                                <option value="пожалуйста">пожалуйста</option>
+                                <option value="пустите">пустите</option>
+                            </InputSelect>
+                        </center>
+                    </div>
+
+                    <div id="block2" class="info">
+                        <center>
+                            <h3>Принимающая сторона</h3>
+                            <h5>Подразделение*:</h5>
+                            <InputSelect class="form-control" @bind-Value="@DivisionId">
+                                @foreach (var p in Division)
+                                {
+                                    <option value="@p.Id">@p.Info</option>
+                                }
+                            </InputSelect>
+                            <h5>ФИО*:</h5>
+                            <InputSelect @bind-Value="@SelectedEmployeeId">
+                                @foreach (var p in Employees)
+                                {
+                                    if (DivisionId == p.DivisionId)
+                                    {
+                                        <option value="@p.Id">@p.Name</option>
+                                    }
+                                }
+                            </InputSelect>
+                        </center>
+                    </div>
+                    <p></p>
+                    <div class="info2">
+                        <h3>Информация о посетителе</h3>
+                        <table>
+                            <tr>
+                                <td>
+                                    <h5>Фамилия*:</h5>
+                                </td>
+                                <td>
+                                    <InputText id="Name" @bind-Value="InputStatement!.FirstName" class="form-control" required="required" />
+
+                                </td>
+                                <td>
+                                    <h5>Организация:</h5>
+                                </td>
+                                <td>
+                                    <InputText id="Organization" @bind-Value="InputStatement!.Organization" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <h5>Имя*:</h5>
+                                </td>
+                                <td>
+                                    <InputText id="Name" @bind-Value="InputStatement!.Name" class="form-control" required="required" />
+                                </td>
+                                <td>
+                                    <h5>Примечание*:</h5>
+                                </td>
+                                <td>
+                                    <InputText id="Note" @bind-Value="InputStatement!.Note" required="required" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <h5>Отчество:</h5>
+                                </td>
+                                <td>
+                                    <InputText @bind-Value="InputStatement!.LastName" />
+                                </td>
+                                <td>
+                                    <h5>Дата рождения*:</h5>
+                                </td>
+                                <td>
+                                    <InputDate @bind-Value="InputStatement!.Birthday" required="required" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <h5>Телефон:</h5>
+                                </td>
+                                <td>
+                                    <InputText @bind-Value="InputStatement!.Number" />
+                                </td>
+                                <td>
+                                    <h5>Серия*:</h5>
+                                </td>
+                                <td>
+                                    <InputText @bind-Value="sPassport" required="required" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <h5>Email*:</h5>
+                                </td>
+                                <td>
+                                    <InputText @bind-Value="InputStatement!.Email" required="required" />
+                                </td>
+                                <td>
+                                    <h5>Номер*:</h5>
+                                </td>
+                                <td>
+                                    <InputText @bind-Value="nPassport" required="required" />
+                                </td>
+                            </tr>
+                        </table>
+                        <div class="foto">
+                            <center>
+                                @if (InputStatement.Photo != null)
+                                {
+                                    var imageBase64 = Convert.ToBase64String(InputStatement.Photo);
+                                    var imageSrc = $"data:image/jpeg;base64,{imageBase64}";
+                                    <img src="@imageSrc" alt="Фото посетителя" style="width: 120px; height: 120px;" />
+                                }
+                                <p></p>
+                                <InputFile OnChange="OnInputPhotoChange" />
+                            </center>
                         </div>
                     </div>
-                </div>
+                    <div class="info" id="block1">
+                        <h3>Прикрепить документ</h3>
+                        <InputFile OnChange="OnInputFileChange" />
+                    </div>
+                    <div id="block2">
+                        <input type="submit" value="Оформить заявку" />
+                    </div>
+                </form>
             </div>
-        </div>
+        </center>
     }
 </body>
-
 </html>
 
 @code {
     [SupplyParameterFromForm]
     public Statement InputStatement { get; set; }
+    public string sPassport { get; set; }
+    public string nPassport { get; set; }
 
     private int SelectedEmployeeId = 0;
     private int DivisionId = 1;
@@ -113,8 +197,67 @@
         Employees = StatementRepository.GetEmployees() ?? new List<Employees>();
     }
 
+    private async Task OnInputPhotoChange(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file != null)
+        {
+            try
+            {
+                using var memoryStream = new MemoryStream();
+                await file.OpenReadStream(maxAllowedSize: 2083432).CopyToAsync(memoryStream);
+                InputStatement.Photo = memoryStream.ToArray();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка: {ex.Message}");
+            }
+
+        }
+    }
+
+    private async Task OnInputFileChange(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file != null)
+        {
+            try
+            {
+                using var memoryStream = new MemoryStream();
+                await file.OpenReadStream(maxAllowedSize: 2083432).CopyToAsync(memoryStream);
+                InputStatement.Pdf = memoryStream.ToArray();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка: {ex.Message}");
+            }
+        }
+    }
+
     private async Task Submit()
     {
         InputStatement.EmployeeId = SelectedEmployeeId;
+        InputStatement.Passport = $"{sPassport} {nPassport}";
+        using var response = await Http.PostAsJsonAsync($"https://localhost:7244/api/Statement/CreateIndivid", InputStatement);
+        if (response.IsSuccessStatusCode)
+        {
+            NotificationOptions options = new NotificationOptions
+                {
+                    Body = "Заявка успешно отправлена!",
+                };
+
+            await NotificationService.CreateAsync("Все хорошо", options);
+            manager.NavigateTo("/");
+        }
+        else
+        {
+            NotificationOptions options = new NotificationOptions
+                {
+                    Body = "Что-то пошло не так",
+                };
+
+            await NotificationService.CreateAsync("Все плохо", options);
+            await response.Content.ReadAsStringAsync();
+        }
     }
 }

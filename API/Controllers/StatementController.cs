@@ -10,9 +10,11 @@ namespace API.Controllers;
 public class StatementController : Controller
 {
     private readonly IStatementRepository _statementRepository;
-    public StatementController(IStatementRepository statementRepository)
+    private readonly IUserRepository _userRepository;
+    public StatementController(IStatementRepository statementRepository, IUserRepository userRepository)
     {
         _statementRepository = statementRepository;
+        _userRepository = userRepository;
     }
 
     #region Вывести всех сотрудников
@@ -30,6 +32,42 @@ public class StatementController : Controller
     {
         var division = _statementRepository.GetDivision();
         return Ok(division);
+    }
+    #endregion
+
+    #region Отправка индивидуальной заявки
+
+    [HttpPost("CreateIndivid")]
+    public ActionResult CreateIndivid([FromBody] Statement Individ)
+    {
+
+        try
+        {
+            _statementRepository.CreateIndivid(Individ);
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+
+    }
+    #endregion
+
+    #region Вывести все индивидуальные заявки по пользователю
+    [HttpGet("GetStatement")]
+    public ActionResult GetStatement()
+    {
+        //var user = _userRepository.GetUser(id);
+        try
+        {
+            var Statement = _statementRepository.GetStatement();
+            return Ok(Statement);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
     #endregion
 }
