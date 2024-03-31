@@ -54,6 +54,25 @@ public class StatementController : Controller
     }
     #endregion
 
+    #region Отправка индивидуальной заявки
+
+    [HttpPost("CreateGrpous")]
+    public ActionResult CreateGrpous([FromBody] List<Statement> Group)
+    {
+
+        try
+        {
+            _statementRepository.CreateGroup(Group);
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+
+    }
+    #endregion
+
     #region Вывести все индивидуальные заявки по пользователю
     [HttpGet("GetStatement")]
     public ActionResult GetStatement()

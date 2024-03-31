@@ -1,5 +1,6 @@
-﻿@page "/Personal"
+﻿@page "/Groups"
 @using Data.Models
+@using Aspose.Cells
 @using Service.Interfaces
 @using Service.Repositories
 @using Syncfusion.Blazor.Buttons
@@ -10,6 +11,7 @@
 @inject IHttpContextAccessor HttpContextAccessor
 @inject NavigationManager manager
 @inject StatementRepository StatementRepository
+@inject IWebHostEnvironment _appEnvironment
 
 
 <html>
@@ -148,25 +150,51 @@
                                 </td>
                             </tr>
                         </table>
-                        <div class="foto">
-                            <center>
-                                @if (InputStatement.Photo != null)
-                                {
-                                    var imageBase64 = Convert.ToBase64String(InputStatement.Photo);
-                                    var imageSrc = $"data:image/jpeg;base64,{imageBase64}";
-                                    <img src="@imageSrc" alt="Фото посетителя" style="width: 120px; height: 120px;" />
-                                }
-                                <p></p>
-                                <InputFile OnChange="OnInputPhotoChange" />
-                            </center>
+                        <button class="m-2 p-2 btn btn-primary" @onclick="AddUser">Добавить посетителя</button>
+                        <div class="info">
+                            <h6>Список посетителей</h6>
+
+                            <div info_file>
+                                <label for="visits"></label>
+                                <InputFile OnChange="OnInputExelChange" accept=".xls,.pdf" />
+                                <a href='table.xls'>Скачать шаблон списка</a>
+                            </div>
+
+
+                            <div class="table">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>№</th>
+                                            <th>ФИО</th>
+                                            <th>Контакты</th>
+                                            <th>Фотография</th>
+                                            <th>Pdf</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @{
+                                            if (Statements != null)
+                                            {
+                                                for (int i = 0; i < Statements.Count(); i++)
+                                                {
+                                                    <tr>
+                                                        <td></td>
+                                                        <td>@Statements[i].Name</td>
+                                                        <td>@Statements[i].Number</td>
+                                                        <td> <InputFile OnChange="@(e => OnInputPhotoChange(e, i))" /> </td>
+                                                        <td><InputFile OnChange="@(e => OnInputFileChange(e, i))" /></td>
+                                                    </tr>
+                                                }
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                    </div>
-                    <div class="info" id="block1">
-                        <h3>Прикрепить документ</h3>
-                        <InputFile OnChange="OnInputFileChange" />
-                    </div>
-                    <div id="block2">
-                        <input type="submit" value="Оформить заявку" />
+
+                        <input type="submit" @onclick="Clear" value="Очистить" />
+                        <input type="submit" @onclick="Submit" value="Оформить заявку" />
                     </div>
                 </form>
             </div>
@@ -177,7 +205,8 @@
 
 @code {
     [SupplyParameterFromForm]
-    public Statement InputStatement { get; set; }
+    public Statement InputStatement { get; set; } 
+    public List<Statement> Statements { get; set; } = new();
     public string sPassport { get; set; }
     public string nPassport { get; set; }
 
@@ -196,7 +225,7 @@
         Employees = StatementRepository.GetEmployees() ?? new List<Employees>();
     }
 
-    private async Task OnInputPhotoChange(InputFileChangeEventArgs e)
+    private async Task OnInputPhotoChange(InputFileChangeEventArgs e, int i)
     {
         var file = e.File;
         if (file != null)
@@ -205,7 +234,7 @@
             {
                 using var memoryStream = new MemoryStream();
                 await file.OpenReadStream(maxAllowedSize: 2083432).CopyToAsync(memoryStream);
-                InputStatement.Photo = memoryStream.ToArray();
+                Statements[i-1].Photo = memoryStream.ToArray();
             }
             catch (Exception ex)
             {
@@ -215,7 +244,18 @@
         }
     }
 
-    private async Task OnInputFileChange(InputFileChangeEventArgs e)
+    private async void AddUser()
+    {
+        InputStatement.Passport = sPassport + " " + nPassport;
+        Statements.Add(InputStatement);
+    }
+
+    private async void Clear()
+    {
+        manager.NavigateTo("/Groups");
+    }
+
+    private async Task OnInputFileChange(InputFileChangeEventArgs e, int i)
     {
         var file = e.File;
         if (file != null)
@@ -224,38 +264,64 @@
             {
                 using var memoryStream = new MemoryStream();
                 await file.OpenReadStream(maxAllowedSize: 2083432).CopyToAsync(memoryStream);
-                InputStatement.Pdf = memoryStream.ToArray();
+                Statements[i-1].Pdf = memoryStream.ToArray();
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Ошибка: {ex.Message}");
+            }
+        }
+    }
+
+    private async Task OnInputExelChange(InputFileChangeEventArgs e)
+    {
+        var uploadedExelGroupUsers = e.File;
+        if (uploadedExelGroupUsers != null)
+        {
+            var path = Path.Combine(_appEnvironment.WebRootPath, "GroupUsers", uploadedExelGroupUsers.Name);
+            using var stream = uploadedExelGroupUsers.OpenReadStream();
+            using var fileStream = new FileStream(path, FileMode.Create);
+            await stream.CopyToAsync(fileStream);
+
+            using (Workbook wb = new Workbook(_appEnvironment.WebRootPath + $"/GroupUsers/{uploadedExelGroupUsers.Name}"))
+            {
+
+                // Получить рабочий лист, используя его индекс
+                Worksheet worksheet = wb.Worksheets[0];
+
+                int rows = worksheet.Cells.MaxDataRow + 1;
+
+                for (int i = 1; i < rows; i++)
+                {
+                    Statement User = new();
+                    User.BeginDate = InputStatement.BeginDate;
+                    User.EndDate = InputStatement.EndDate;
+                    User.Target = InputStatement.Target;
+                    User.EmployeeId = InputStatement.EmployeeId;
+                    User.FirstName = Convert.ToString(worksheet.Cells[i, 1].Value);
+                    User.Name = Convert.ToString(worksheet.Cells[i, 2].Value);
+                    User.LastName = Convert.ToString(worksheet.Cells[i, 3].Value);
+                    User.Number = Convert.ToString(worksheet.Cells[i, 4].Value);
+                    User.Email = Convert.ToString(worksheet.Cells[i, 5].Value);
+                    User.Organization = Convert.ToString(worksheet.Cells[i, 6].Value);
+                    User.Note = Convert.ToString(worksheet.Cells[i, 7].Value);
+                    User.Birthday = Convert.ToDateTime(Convert.ToString(worksheet.Cells[i, 8].Value));
+                    User.Passport = Convert.ToString(worksheet.Cells[i, 9].Value) + " " + Convert.ToString(worksheet.Cells[i, 10].Value);
+                    Statements.Add(User);
+                }
             }
         }
     }
 
     private async Task Submit()
     {
-        InputStatement.EmployeeId = SelectedEmployeeId;
-        InputStatement.Passport = $"{sPassport} {nPassport}";
-        using var response = await Http.PostAsJsonAsync($"https://localhost:7244/api/Statement/CreateIndivid", InputStatement);
+        using var response = await Http.PostAsJsonAsync($"https://localhost:7244/api/Statement/CreateGrpous", Statements);
         if (response.IsSuccessStatusCode)
         {
-            NotificationOptions options = new NotificationOptions
-                {
-                    Body = "Заявка успешно отправлена!",
-                };
-
-            await NotificationService.CreateAsync("Все хорошо", options);
             manager.NavigateTo("/");
         }
         else
         {
-            NotificationOptions options = new NotificationOptions
-                {
-                    Body = "Что-то пошло не так",
-                };
-
-            await NotificationService.CreateAsync("Все плохо", options);
             await response.Content.ReadAsStringAsync();
         }
     }
