@@ -46,7 +46,7 @@
                         <div class="register_link">
                             <p>
                                 Нет аккаунта?
-                                <a asp-page="SignUp">Зарегистрироваться</a>
+                                <a href="/SignUp">Зарегистрироваться</a>
                             </p>
                         </div>
                     </div>
@@ -83,7 +83,7 @@
                 };
             //HttpContextAccessor.HttpContext.Response.Cookies.Append("UserId", person.Id.ToString(), cookieOptions);
 
-            manager.NavigateTo("/");
+            manager.NavigateTo($"/{@person.Id}");
         }
         else
         {

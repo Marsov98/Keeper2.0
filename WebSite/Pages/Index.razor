@@ -1,4 +1,5 @@
 ﻿@page "/Home"
+@page "/{id:int}"
 @page "/"
 @using Data.Models
 @using Microsoft.Extensions.Caching.Memory
@@ -18,35 +19,34 @@
 <body>
     
     <center>
-        @if (ShowNotification)
-        {
-            <div class="notification">
-                Добро пожаловать, @Users.Name
-            </div>
+        @if(Id == 0){
+            <h1>Вы еще не авторизированны...</h1>
+            <a class="btn btn-lg btn-primary btn-block" href="/Auth">Авторизация</a>
         }
+        else
+        {
             <h1 style="color: #fff">Тип заявки</h1>
-        <a class="btn btn-lg btn-primary btn-block" href="/Personal">
+            <a class="btn btn-lg btn-primary btn-block" href="/Personal">
                 <img width="300" height="300" src="img/one.png" />
                 <p></p>
                 <h4>Личная</h4>
             </a>
-        <a class="btn btn-lg btn-primary btn-block" href="/Groups">
-            <img width="300" height="300" src="img/group.png" />
+            <a class="btn btn-lg btn-primary btn-block" href="/Groups">
+                <img width="300" height="300" src="img/group.png" />
                 <p></p>
                 <h4>Групповая</h4>
             </a>
             <p></p>
-        <a class="btn btn-lg btn-primary btn-block" href="/History">История заявок</a>
-
+            <a class="btn btn-lg btn-primary btn-block" href="/History/@Id">История заявок</a>
+        }
     </center>
 
 </body>
 
 @code {
+    [Parameter]
+    public int Id { get; set; }
     public Users Users = new();
-
-    private bool ShowNotification { get; set; }
-    private string NotificationMessage { get; set; }
 
     /*protected override void OnAfterRender(bool firstRender)
     {
@@ -67,11 +67,5 @@
     }*/
     protected override void OnInitialized()
     {
-        string cookie = HttpContextAccessor.HttpContext?.Request?.Cookies["UserId"];
-        if (cookie != null)
-        {
-            Users = userRepository.GetUser(Convert.ToInt32(cookie));
-            ShowNotification = true;
-        }
     }
 }

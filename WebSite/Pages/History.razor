@@ -1,4 +1,4 @@
-﻿@page "/History"
+﻿@page "/History/{id:int}"
 @using Data.Models;
 
 @inject IHttpContextAccessor HttpContextAccessor
@@ -26,45 +26,44 @@
                     <option value="2">Групповые</option>
                 </InputSelect>
             </div>
-        </center>
 
-        <table class="table">
-            <thead>
-                <tr>
-                    <td><h3>ID</h3></td>
-                    <td><h3>Подразделение</h3></td>
-                    <td><h3>Дата</h3></td>
-                    <td><h3>Время</h3></td>
-                    <td><h3>Статус</h3></td>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var statements in Statements)
-                {
+
+            <table class="table">
+                <thead>
                     <tr>
-                        <td>
-                            <h3>@statements.Id</h3>
-                        </td>
-                        <td>
-                            <h3>@statements.Employees.Division.Info</h3>
-                        </td>
-                        <td>
-                            <h3>@statements.BeginDate</h3>
-                        </td>
-                        <td>
-                            <h3>@statements.EndDate</h3>
-                        </td>
-                        <td>
-                            <h3>@statements.Status</h3>
-                        </td>
+                        <td><h3>ID</h3></td>
+                        <td><h3>Подразделение</h3></td>
+                        <td align="center"><h3>Дата и время</h3></td>
+                        <td><h3>Статус</h3></td>
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach (var statements in Statements)
+                    {
+                        <tr>
+                            <td>
+                                <h3>@statements.Id</h3>
+                            </td>
+                            <td>
+                                <h3>@statements.Employees.Division.Info</h3>
+                            </td>
+                            <td>
+                                <h3>@statements.BeginDate - @statements.EndDate</h3>
+                            </td>
+                            <td>
+                                <h3>@statements.Status</h3>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </center>
     }
 </body>
 </html>
 @code {
+    [Parameter]
+    public int Id { get; set; }
     int Select = 0;
     public List<Statement> Statements = new List<Statement>();
     static HttpClient Http = new HttpClient();

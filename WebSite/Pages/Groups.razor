@@ -178,12 +178,13 @@
                                             {
                                                 for (int i = 0; i < Statements.Count(); i++)
                                                 {
+                                                    var currentIndex = i;
                                                     <tr>
-                                                        <td></td>
+                                                        <td>@(i+1)</td>
                                                         <td>@Statements[i].Name</td>
                                                         <td>@Statements[i].Number</td>
-                                                        <td> <InputFile OnChange="@(e => OnInputPhotoChange(e, i))" /> </td>
-                                                        <td><InputFile OnChange="@(e => OnInputFileChange(e, i))" /></td>
+                                                        <td><InputFile OnChange="@(e => OnInputPhotoChange(e, currentIndex))" /></td>
+                                                        <td><InputFile OnChange="@(e => OnInputFileChange(e, currentIndex))" /></td>
                                                     </tr>
                                                 }
                                             }
@@ -234,7 +235,7 @@
             {
                 using var memoryStream = new MemoryStream();
                 await file.OpenReadStream(maxAllowedSize: 2083432).CopyToAsync(memoryStream);
-                Statements[i-1].Photo = memoryStream.ToArray();
+                Statements[i].Photo = memoryStream.ToArray();
             }
             catch (Exception ex)
             {
@@ -264,7 +265,7 @@
             {
                 using var memoryStream = new MemoryStream();
                 await file.OpenReadStream(maxAllowedSize: 2083432).CopyToAsync(memoryStream);
-                Statements[i-1].Pdf = memoryStream.ToArray();
+                Statements[i].Pdf = memoryStream.ToArray();
             }
             catch (Exception ex)
             {
@@ -297,7 +298,6 @@
                     User.BeginDate = InputStatement.BeginDate;
                     User.EndDate = InputStatement.EndDate;
                     User.Target = InputStatement.Target;
-                    User.EmployeeId = InputStatement.EmployeeId;
                     User.FirstName = Convert.ToString(worksheet.Cells[i, 1].Value);
                     User.Name = Convert.ToString(worksheet.Cells[i, 2].Value);
                     User.LastName = Convert.ToString(worksheet.Cells[i, 3].Value);
@@ -315,6 +315,10 @@
 
     private async Task Submit()
     {
+        foreach(var p in Statements)
+        {
+            p.EmployeeId = SelectedEmployeeId;
+        }
         using var response = await Http.PostAsJsonAsync($"https://localhost:7244/api/Statement/CreateGrpous", Statements);
         if (response.IsSuccessStatusCode)
         {

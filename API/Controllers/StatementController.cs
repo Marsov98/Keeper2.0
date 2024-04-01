@@ -54,7 +54,7 @@ public class StatementController : Controller
     }
     #endregion
 
-    #region Отправка индивидуальной заявки
+    #region Отправка групповой заявки
 
     [HttpPost("CreateGrpous")]
     public ActionResult CreateGrpous([FromBody] List<Statement> Group)
