@@ -1,5 +1,6 @@
 ﻿using Data;
 using Data.Models;
+using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Service.Interfaces;
 using System.Collections.Generic;
@@ -21,9 +22,10 @@ namespace Service.Repositories
         {
             if (Statement != null)
             {
+                int applicationNumber = GetNextApplicationNumber();
                 foreach (var user in Statement)
                 {
-                    user.ApplicationNumber = GetNextApplicationNumber();
+                    user.ApplicationNumber = applicationNumber;
 
                     _db.Statement.Add(user);
                 }
@@ -54,7 +56,11 @@ namespace Service.Repositories
             return Employees;
         }
 
-        public int GetNextApplicationNumber() => (int)((int)_db.Statement.Count() == 0 ? 1 : _db.Statement.Max(u => u.ApplicationNumber) + 1);
+        public int GetNextApplicationNumber()
+        {
+            var NextApplicationNumber = _db.Statement.Max(u => u.ApplicationNumber) + 1;
+            return (int)NextApplicationNumber;
+        }
 
 
         public List<Statement> GetStatement()
