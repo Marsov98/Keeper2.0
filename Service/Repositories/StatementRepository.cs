@@ -56,6 +56,28 @@ namespace Service.Repositories
             return Employees;
         }
 
+        public List<Statement> GetGroup(int Id)
+        {
+            var Statement = _db.Statement.Where(u => u.ApplicationNumber == Id).ToList();
+            List<Employees> Employees = GetEmployees();
+            int Count = Statement.Count();
+            for (int i = 0; i < Count; i++)
+            {
+                Statement[i].Employees = Employees[Statement[i].EmployeeId - 1];
+            }
+            return Statement;
+        }
+
+        public Statement GetIndivid(int Id)
+        {
+            var Statement = _db.Statement.Where(u => u.Id == Id).FirstOrDefault();
+            List<Employees> Employees = GetEmployees();
+
+            Statement.Employees = Employees[Statement.EmployeeId - 1];
+
+            return Statement;
+        }
+
         public int GetNextApplicationNumber()
         {
             var NextApplicationNumber = _db.Statement.Max(u => u.ApplicationNumber) + 1;

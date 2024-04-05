@@ -8,6 +8,7 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "General department", "General department\General department\General department.csproj", "{0A31D884-8C19-45F7-83CE-918E7CE9FA6D}"
 	ProjectSection(ProjectDependencies) = postProject
 		{436720F7-F53C-449D-BDE5-46B58071F0F0} = {436720F7-F53C-449D-BDE5-46B58071F0F0}
+		{E02D2D3D-7C30-4DF4-9629-6E6EEA5698D6} = {E02D2D3D-7C30-4DF4-9629-6E6EEA5698D6}
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "API", "API\API.csproj", "{88D4F05F-9765-458B-89EE-060AF3BE2975}"

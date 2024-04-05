@@ -73,7 +73,7 @@ public class StatementController : Controller
     }
     #endregion
 
-    #region Вывести все индивидуальные заявки по пользователю
+    #region Вывести все заявки
     [HttpGet("GetStatement")]
     public ActionResult GetStatement()
     {
@@ -81,6 +81,40 @@ public class StatementController : Controller
         try
         {
             var Statement = _statementRepository.GetStatement();
+            return Ok(Statement);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+    #endregion
+
+    #region Вывести все индивидуальные заявки
+    [HttpGet("GetIndivid/{id}")]
+    public ActionResult GetIndivid(int id)
+    {
+        //var user = _userRepository.GetUser(id);
+        try
+        {
+            var Statement = _statementRepository.GetIndivid(id);
+            return Ok(Statement);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+    #endregion
+
+    #region Вывести все групповые заявки
+    [HttpGet("GetGroup/{id}")]
+    public ActionResult GetGroup(int id)
+    {
+        //var user = _userRepository.GetUser(id);
+        try
+        {
+            var Statement = _statementRepository.GetGroup(id);
             return Ok(Statement);
         }
         catch (Exception ex)

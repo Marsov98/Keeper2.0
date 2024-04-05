@@ -1,0 +1,72 @@
+﻿@page "/"
+@page "/Auth"
+@using Data.Models
+
+@inject NavigationManager manager
+
+<PageTitle>Авторизация</PageTitle>
+
+<html>
+
+<head>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h1>Авторизация сотрудника</h1>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" class="form-signin" @onsubmit="Submit" @formname="starship-plain-form">
+                            <AntiforgeryToken />
+                            <div class="form-group">
+                                <label for="Login">Логин:</label>
+                                <InputText id="Login" @bind-Value="InputAuth!.Login" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label for="Password">Пароль:</label>
+                                <InputText id="Password" @bind-Value="InputAuth!.Password" class="form-control" type="password" />
+                            </div>
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
+
+@code {
+    [SupplyParameterFromForm]
+    private Users InputAuth { get; set; }
+
+    static HttpClient Http = new HttpClient();
+
+    protected override void OnInitialized() => InputAuth ??= new();
+
+    private async Task Submit()
+    {
+        // Http.Timeout = TimeSpan.FromMinutes(30);
+        using var response = await Http.PostAsJsonAsync($"https://localhost:7244/api/User/Auth", InputAuth);
+        if (response.IsSuccessStatusCode)
+        {
+            var person = await response.Content.ReadFromJsonAsync<Users>();
+
+            if (person.RoleId == 1002)
+            {
+                manager.NavigateTo($"/Home");
+            }
+        }
+        else
+        {
+            await response.Content.ReadAsStringAsync();
+        }
+    }
+}

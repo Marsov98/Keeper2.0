@@ -1,0 +1,64 @@
+﻿@page "/Individ/{id:int}"
+@using Data.Models
+
+<html>
+<head>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <a class="btn btn-primary" href="/Home">Главная</a>
+    @if (Statements == null)
+    {
+        <p><em>Загрузка...</em></p>
+    }
+    else
+    {
+        <center>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <td><h3>ID</h3></td>
+                        <td><h3>ФИО</h3></td>
+                        <td><h3>Подразделение</h3></td>
+                        <td align="center"><h3>Дата и время</h3></td>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    <tr>
+                        <td>
+                            <h3>@Statements.Id</h3>
+                        </td>
+                        <td>
+                            <h3>@Statements.FirstName @Statements.Name @Statements.Name</h3>
+                        </td>
+                        <td>
+                            <h3>@Statements.Employees.Division.Info</h3>
+                        </td>
+                        <td>
+                            <h3>@Statements.BeginDate - @Statements.EndDate</h3>
+                        </td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </center>
+    }
+</body>
+</html>
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    public Statement Statements = new Statement();
+    static HttpClient Http = new HttpClient();
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var response = await Http.GetAsync($"https://localhost:7244/api/Statement/GetIndivid/{Id}");
+        if (response.IsSuccessStatusCode)
+        {
+            Statements = await response.Content.ReadFromJsonAsync<Statement>();
+        }
+    }
+}

@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Data;
+using Microsoft.Extensions.Logging;
 
 namespace General_department
 {
@@ -15,9 +16,11 @@ namespace General_department
                 });
 
             builder.Services.AddMauiBlazorWebView();
+            builder.Services.AddTransient<KeeperContext>();
+
 
 #if DEBUG
-    		builder.Services.AddBlazorWebViewDeveloperTools();
+            builder.Services.AddBlazorWebViewDeveloperTools();
     		builder.Logging.AddDebug();
 #endif
 
