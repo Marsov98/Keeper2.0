@@ -10,17 +10,16 @@
 @inject IUserRepository userRepository
 @inject NavigationManager manager
 @inject IMemoryCache Cache
-@inject IJSRuntime JSRuntime
 
 <PageTitle>Home</PageTitle>
 
 <head>
+    
 </head>
 <body>
-
+    
     <center>
-        @if (string.IsNullOrEmpty(cookieValue))
-        {
+        @if(Id == 0){
             <h1>Вы еще не авторизированны...</h1>
             <a class="btn btn-lg btn-primary btn-block" href="/Auth">Авторизация</a>
         }
@@ -42,7 +41,6 @@
         }
     </center>
 
-
 </body>
 
 @code {
@@ -50,18 +48,24 @@
     public int Id { get; set; }
     public Users Users = new();
 
-    private string cookieValue;
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    /*protected override void OnAfterRender(bool firstRender)
     {
         if (firstRender)
         {
-            cookieValue = await JSRuntime.InvokeAsync<string>("cookieInterop.getCookie", "MyCookie");
-            StateHasChanged();
+            string cookie = HttpContextAccessor.HttpContext?.Request?.Cookies["UserId"];
+            if (cookie != null)
+            {
+                Users = userRepository.GetUser(Convert.ToInt32(cookie));
+                ShowNotification = true;
+                manager.NavigateTo("/");
+            }
+            else
+            {
+                manager.NavigateTo("Auth");
+            }
         }
     }*/
     protected override void OnInitialized()
     {
     }
-
 }
