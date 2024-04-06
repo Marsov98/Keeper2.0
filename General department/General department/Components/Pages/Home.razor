@@ -48,17 +48,16 @@
                             <tr>
                                 @if (statements.ApplicationNumber != null)
                                 {
-                                    <a href="/Group/@statements.ApplicationNumber">
                                     <td>
-                                        <h3>@statements.Id</h3>
-                                    </td></a>
+                                        <a class="btn btn-primary" href="/Group/@statements.ApplicationNumber">@statements.Id</a>
+                                    </td>
                                 }
                                 else
                                 {
-                                    <a href="/Individ/@statements.Id">
+
                                     <td>
-                                        <h3>@statements.Id</h3>
-                                    </td></a>
+                                        <a class="btn btn-primary" href="/Individ/@statements.Id">@statements.Id</a>
+                                    </td>
                                 }
                                 <td>
                                     <h3>@statements.FirstName @statements.Name @statements.Name</h3>
@@ -86,10 +85,9 @@
                             if (statements.ApplicationNumber == null)
                             {
                                 <tr>
-                                    <a href="/Individ/@statements.Id">
                                     <td>
-                                        <h3>@statements.Id</h3>
-                                    </td></a>
+                                        <a class="btn btn-primary" href="/Individ/@statements.Id">@statements.Id</a>
+                                    </td>
                                     <td>
                                         <h3>@statements.FirstName @statements.Name @statements.Name</h3>
                                     </td>
@@ -107,10 +105,9 @@
                             if (statements.ApplicationNumber != null)
                             {
                                 <tr>
-                                    <a href="/Group/@statements.ApplicationNumber">
                                     <td>
-                                        <h3>@statements.Id</h3>
-                                    </td></a>
+                                        <a class="btn btn-primary" href="/Group/@statements.ApplicationNumber">@statements.Id</a>
+                                    </td>
                                     <td>
                                         <h3>@statements.FirstName @statements.Name @statements.Name</h3>
                                     </td>

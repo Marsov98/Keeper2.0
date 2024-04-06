@@ -19,10 +19,18 @@
                 <thead>
                     <tr>
                         <td><h3>ID</h3></td>
-                        <td><h3>ФИО</h3></td>
+                        <td><h3>Фото</h3></td>
                         <td><h3>ID группы</h3></td>
+                        <td><h3>ФИО</h3></td>
+                        <td><h3>Сотрудник</h3></td>
                         <td><h3>Подразделение</h3></td>
                         <td align="center"><h3>Дата и время</h3></td>
+                        <td><h3>Телефон</h3></td>
+                        <td><h3>Email</h3></td>
+                        <td><h3>Организация</h3></td>
+                        <td><h3>Дата рождения</h3></td>
+                        <td><h3>Паспорт</h3></td>
+                        <td><h3>Примечание</h3></td>
                     </tr>
                 </thead>
                 <tbody>
@@ -33,16 +41,40 @@
                                 <h3>@statements.Id</h3>
                             </td>
                             <td>
-                                <h3>@statements.FirstName @statements.Name @statements.Name</h3>
+                                <a class="btn btn-primary" href="/Photo/@statements.Id">Фото</a>
                             </td>
                             <td>
                                 <h3>@statements.ApplicationNumber</h3>
+                            </td>
+                            <td>
+                                <h3>@statements.FirstName @statements.Name @statements.LastName</h3>
+                            </td>
+                            <td>
+                                <h3>@statements.Employees.Name</h3>
                             </td>
                             <td>
                                 <h3>@statements.Employees.Division.Info</h3>
                             </td>
                             <td>
                                 <h3>@statements.BeginDate - @statements.EndDate</h3>
+                            </td>
+                            <td>
+                                <h3>@statements.Number</h3>
+                            </td>
+                            <td>
+                                <h3>@statements.Email</h3>
+                            </td>
+                            <td>
+                                <h3>@statements.Organization</h3>
+                            </td>
+                            <td>
+                                <h3>@statements.Birthday</h3>
+                            </td>
+                            <td>
+                                <h3>@statements.Passport  <a class="btn btn-primary" href="/Passport/@statements.Id">Скан</a></h3>
+                            </td>
+                            <td>
+                                <h3>@statements.Note</h3>
                             </td>
                         </tr>
 

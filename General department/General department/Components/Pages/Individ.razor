@@ -1,6 +1,8 @@
 ﻿@page "/Individ/{id:int}"
 @using Data.Models
 
+@inject NavigationManager NavigationManager
+
 <html>
 <head>
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
@@ -19,9 +21,17 @@
                 <thead>
                     <tr>
                         <td><h3>ID</h3></td>
+                        <td><h3>Фото</h3></td>
                         <td><h3>ФИО</h3></td>
+                        <td><h3>Сотрудник</h3></td>
                         <td><h3>Подразделение</h3></td>
                         <td align="center"><h3>Дата и время</h3></td>
+                        <td><h3>Телефон</h3></td>
+                        <td><h3>Email</h3></td>
+                        <td><h3>Организация</h3></td>
+                        <td><h3>Дата рождения</h3></td>
+                        <td><h3>Паспорт</h3></td>
+                        <td><h3>Примечание</h3></td>
                     </tr>
                 </thead>
                 <tbody>
@@ -31,13 +41,49 @@
                             <h3>@Statements.Id</h3>
                         </td>
                         <td>
-                            <h3>@Statements.FirstName @Statements.Name @Statements.Name</h3>
+                            <a class="btn btn-primary" href="/Photo/@Statements.Id">Фото</a>
                         </td>
                         <td>
-                            <h3>@Statements.Employees.Division.Info</h3>
+                            <h3>@Statements.FirstName @Statements.Name @Statements.LastName</h3>
                         </td>
+                        @if (Statements.Employees == null)
+                        {
+                            <td>
+                                <em>Загрузка...</em>
+                            </td>
+                            <td>
+                                <em>Загрузка...</em>
+                            </td>
+                        }
+                        else
+                        {
+                            <td>
+                                <h3>@Statements.Employees.Name</h3>
+                            </td>
+                            <td>
+                                <h3>@Statements.Employees.Division.Info</h3>
+                            </td>
+                        }
                         <td>
                             <h3>@Statements.BeginDate - @Statements.EndDate</h3>
+                        </td>
+                        <td>
+                            <h3>@Statements.Number</h3>
+                        </td>
+                        <td>
+                            <h3>@Statements.Email</h3>
+                        </td>
+                        <td>
+                            <h3>@Statements.Organization</h3>
+                        </td>
+                        <td>
+                            <h3>@Statements.Birthday</h3>
+                        </td>
+                        <td>
+                            <h3>@Statements.Passport <a class="btn btn-primary" href="/Passport/@Statements.Id">Скан</a></h3>
+                        </td>
+                        <td>
+                            <h3>@Statements.Note</h3>
                         </td>
                     </tr>
 
@@ -61,4 +107,14 @@
             Statements = await response.Content.ReadFromJsonAsync<Statement>();
         }
     }
+
+    /*private void OnOpenWindowClicked()
+    {
+        var secondWindow = new Window()
+            {
+                Page = new NewPage1("Meow~")
+            };
+
+        Application.Current.OpenWindow(secondWindow);
+    }*/
 }

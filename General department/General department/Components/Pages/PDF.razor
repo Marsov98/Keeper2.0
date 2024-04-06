@@ -1,0 +1,30 @@
+﻿@page "/Passport/{id:int}"
+<h3>Скан паспорта посетителя</h3>
+@if (Statements.Pdf != null)
+{
+    
+    var imageBase64 = Convert.ToBase64String(Statements.Pdf);
+    var imageSrc = $"data:application/pdf;base64,{imageBase64}";
+    <object data="@imageSrc" type="application/pdf" width="1000" height="800">
+        Ваш браузер не поддерживает встроенные PDF.
+    </object>
+}
+else
+{
+    <h3>Отсутствует скан паспорта посетителя</h3>
+}
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    public Statement Statements = new Statement();
+    static HttpClient Http = new HttpClient();
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var response = await Http.GetAsync($"https://localhost:7244/api/Statement/GetIndivid/{Id}");
+        if (response.IsSuccessStatusCode)
+        {
+            Statements = await response.Content.ReadFromJsonAsync<Statement>();
+        }
+    }
+}
