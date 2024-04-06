@@ -13,9 +13,11 @@ namespace Service.Repositories
     public class StatementRepository : IStatementRepository
     {
         private readonly KeeperContext _db;
-        public StatementRepository(KeeperContext db)
+        private readonly IUserRepository _user;
+        public StatementRepository(KeeperContext db, IUserRepository user)
         {
             _db = db;
+            _user = user;
         }
 
         public void CreateGroup(List<Statement> Statement)
@@ -95,6 +97,23 @@ namespace Service.Repositories
                 Statement[i].Employees = Employees[Statement[i].EmployeeId - 1];
             }
             return Statement;
+        }
+
+        public void UpdateGroup(List<Statement> statements)
+        {
+            foreach (var statement in statements)
+            {
+                statement.Employees = null;
+                // Теперь прикрепляем и обновляем сущность
+                _db.Attach(statement);
+                _db.Entry(statement).State = EntityState.Modified;
+            }
+            _db.SaveChanges();
+        }
+
+        public void UpdateIndivid(Statement Statement)
+        {
+            throw new NotImplementedException();
         }
     }
 }

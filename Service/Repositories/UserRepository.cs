@@ -39,7 +39,7 @@ namespace Service.Repositories
 
         public void Remove(int id)
         {
-            Users user = _db.Users.Find(id);
+            Users user = GetUser(id);
 
             _db.Users.Remove(user);
             _db.SaveChangesAsync();
@@ -69,6 +69,25 @@ namespace Service.Repositories
             _db.SaveChanges(); // Используйте асинхронный метод для сохранения изменений
 
             return division; ;
+        }
+
+        public Users GetUserByPassport(string passport)
+        {
+            return _db.Users.Where(p => p.Passport == passport).FirstOrDefault();
+        }
+
+        public void BlackList(string passport)
+        {
+            var User = GetUserByPassport(passport);
+            if (User.BlFirst == true) 
+            {
+                User.BlFirst = false;
+            }
+            else {
+                User.BlLast = false;
+            }
+            _db.Attach(User).State = EntityState.Modified;
+            _db.SaveChanges();
         }
     }
 

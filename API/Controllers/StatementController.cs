@@ -59,10 +59,27 @@ public class StatementController : Controller
     [HttpPost("CreateGrpous")]
     public ActionResult CreateGrpous([FromBody] List<Statement> Group)
     {
-
         try
         {
             _statementRepository.CreateGroup(Group);
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+
+    }
+    #endregion
+
+    #region Изменение групповой заявки
+
+    [HttpPost("UpdateGroup")]
+    public ActionResult UpdateGroup([FromBody] List<Statement> Group)
+    {
+        try
+        {
+            _statementRepository.UpdateGroup(Group);
             return Ok();
         }
         catch (Exception ex)

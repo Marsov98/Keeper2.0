@@ -31,6 +31,7 @@
                         <td><h3>Дата рождения</h3></td>
                         <td><h3>Паспорт</h3></td>
                         <td><h3>Примечание</h3></td>
+                        <td><h3>ЧС</h3></td>
                     </tr>
                 </thead>
                 <tbody>
@@ -76,11 +77,35 @@
                             <td>
                                 <h3>@statements.Note</h3>
                             </td>
+                            <td>
+                                <input type="submit" class="btn btn-primary" @onclick="() => BlackList(statements.Passport)" value="Ложные данные" />
+                            </td>
                         </tr>
 
                     }
                 </tbody>
             </table>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <td><h3>Время начала</h3></td>
+                        <td><h3>Время начала</h3></td>
+                        <td><h3>Статус</h3></td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><input @bind-value="Begin" type="datetime-local"></td>
+                        <td><input @bind-value="End" type="datetime-local"></td>
+                        <InputSelect @bind-Value="Status">
+                            <option value="0">Одобрено</option>
+                            <option value="1">Недостоверные данные</option>
+                            <option value="2">Отсутствие прикрепленных файлов</option>
+                        </InputSelect>
+                    </tr>
+                </tbody>
+            </table>
+            <button class="btn btn-primary" @onclick="Push">Отправить</button>
         </center>
     }
 </body>
@@ -90,6 +115,8 @@
     public int Id { get; set; }
     public List<Statement> Statements = new List<Statement>();
     static HttpClient Http = new HttpClient();
+    int Status = 0;
+    DateTime Begin = DateTime.Now, End = DateTime.Now;
 
     protected override async Task OnInitializedAsync()
     {
@@ -97,6 +124,39 @@
         if (response.IsSuccessStatusCode)
         {
             Statements = await response.Content.ReadFromJsonAsync<List<Statement>>();
+        }
+    }
+
+    private async Task BlackList(string passport)
+    {
+        using var response = await Http.GetAsync($"https://localhost:7244/api/User/BlackList/{passport}");
+        if (response.IsSuccessStatusCode)
+        {
+            Console.WriteLine("Пользователь добавлен в ЧС");
+        }
+    }
+
+    private async Task Push()
+    {
+        foreach (var statements in Statements)
+        {
+            statements.BeginDate = Begin;
+            statements.EndDate = End;
+            switch (Status)
+            {
+                case 1:
+                case 2:
+                    statements.Status = "Заявка на посещение объекта КИИ отклонена в связи с нарушением Федерального закона от 26.07.2017 № 194-ФЗ «О внесении изменений в Уголовный кодекс Российской Федерации и статью 151 Уголовно-процессуального кодекса Российской Федерации в связи с принятием Федерального закона " + '"' + "О безопасности критической информационной инфраструктуры Российской Федерации" + '"' + " по причине указания заявителем заведомо недостоверных данных";
+                    break;
+                default:
+                    statements.Status = "Одобрено";
+                    break;
+            }
+        }
+        using var response = await Http.PostAsJsonAsync($"https://localhost:7244/api/Statement/UpdateGroup", Statements);
+        if (response.IsSuccessStatusCode)
+        {
+            Console.WriteLine("Готово");
         }
     }
 }

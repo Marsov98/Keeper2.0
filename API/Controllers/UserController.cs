@@ -115,4 +115,20 @@ public class UserController : Controller
         return users;
     }
     #endregion
+
+    #region Добавление в ЧС
+    [HttpGet("BlackList/{passport}")]
+    public ActionResult BlackList(string passport)
+    {
+        try
+        {
+            _userRepository.BlackList(passport);
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+    #endregion
 }

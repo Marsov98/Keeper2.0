@@ -17,4 +17,8 @@ public interface IUserRepository
     void Remove(int id);
 
     Users GetUser(int id);
+
+    Users GetUserByPassport(string passport);
+
+    void BlackList(string passport);
 }

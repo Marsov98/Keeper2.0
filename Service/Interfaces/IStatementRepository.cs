@@ -12,4 +12,6 @@ public interface IStatementRepository
     void CreateIndivid(Statement Statement);
     void CreateGroup(List<Statement> Statement);
     int GetNextApplicationNumber();
+    void UpdateIndivid(Statement Statement);
+    void UpdateGroup(List<Statement> Statement);
 }
