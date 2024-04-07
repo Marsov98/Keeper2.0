@@ -105,18 +105,18 @@
             </table>
             <button class="btn btn-primary" @onclick="Push">Отправить</button>
             <div class="form-group">
-            <label for="date">Дата:</label>
+                <label for="date">Дата:</label>
                 <input type="date" id="date" @onchange="@(date => UpdateTimeOptions(date))" />
             </div>
 
             <div class="form-group">
                 <label for="startTime">Начало времени:</label>
-                <InputSelect id="startTime" @bind-Value="Begin">
+                <select id="startTime" @onchange="@(date => UpdateEndTimes(date))">
                     @foreach (var time in StartTimes)
                     {
                         <option value="@time">@time.ToString("HH:mm")</option>
                     }
-                </InputSelect>
+                </select>
             </div>
 
             <div class="form-group">
@@ -142,7 +142,6 @@
     List<DateTime> StartTimes { get; set; } = new List<DateTime>();
     List<DateTime> EndTimes { get; set; } = new List<DateTime>();
     private List<BusyTime> busyTimes = new List<BusyTime>();
-
 
     DateTime Begin, End;
 
@@ -182,10 +181,13 @@
         var currentDate = SelectedDate.Date;
         for (var hour = 8; hour <= 20; hour++)
         {
-            for (var minute = 0; minute <= 50; minute += 10)
+            if (hour != 20)
             {
-                allTimes.Add(new DateTime(currentDate.Year, currentDate.Month, currentDate.Day, hour, minute, 0));
-            }
+                for (var minute = 0; minute <= 50; minute += 10)
+                {
+                    allTimes.Add(new DateTime(currentDate.Year, currentDate.Month, currentDate.Day, hour, minute, 0));
+                }
+            }   
         }
 
         // Фильтрация доступных времен
@@ -203,10 +205,29 @@
         return times;
     }
 
-    private void UpdateEndTimes()
+    private void UpdateEndTimes(ChangeEventArgs e)
     {
-        // Обновление списка доступных конечных времен на основе выбранного начального времени
-        EndTimes = EndTimes.Where(t => t > Begin).ToList();
+        DateTime.TryParse(e.Value.ToString(), out DateTime selectedDate);
+        Begin = selectedDate;
+        // Получаем список занятых времен, которые начинаются после выбранного времени начала
+        var busyTimesAfterBegin = busyTimes
+            .Where(bt => bt.BusyBeginDate > Begin)
+            .OrderBy(bt => bt.BusyBeginDate)
+            .ToList();
+
+        // Если занятые времена есть после выбранного времени начала,
+        // то конечное время должно быть меньше времени начала следующего занятого времени
+        if (busyTimesAfterBegin.Any())
+        {
+            var nextBusyTimeBegin = busyTimesAfterBegin.First().BusyBeginDate;
+            EndTimes = EndTimes.Where(t => t < nextBusyTimeBegin && t > Begin).ToList();
+        }
+        else
+        {
+            // Если занятых времен после выбранного времени начала нет,
+            // то конечное время может быть любым временем после выбранного времени начала
+            EndTimes = EndTimes.Where(t => t > Begin).ToList();
+        }
     }
 
     private void UpdateStartTimes()
@@ -243,6 +264,11 @@
         }
         using var response = await Http.PostAsJsonAsync($"https://localhost:7244/api/Statement/UpdateGroup", Statements);
         if (response.IsSuccessStatusCode)
+        {
+            Console.WriteLine("Готово");
+        }
+        using var responseTime = await Http.PostAsJsonAsync($"https://localhost:7244/api/Statement/UpdateBusyTime", Statements[0]);
+        if (responseTime.IsSuccessStatusCode)
         {
             Console.WriteLine("Готово");
         }
