@@ -11,6 +11,7 @@ public class KeeperContext : DbContext
     public DbSet<Users> Users { get; set; }
     public DbSet<Statement> Statement { get; set; }
     public DbSet<Role> Role { get; set; }
+    public DbSet<BusyTime> BusyTime { get; set; }
     
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

@@ -41,6 +41,11 @@ namespace Service.Repositories
             _db.SaveChanges();
         }
 
+        public List<BusyTime> GetBusyTime()
+        {
+            return _db.BusyTime.ToList();
+        }
+
         public List<Division> GetDivision()
         {
             return _db.Division.ToList();
@@ -97,6 +102,12 @@ namespace Service.Repositories
                 Statement[i].Employees = Employees[Statement[i].EmployeeId - 1];
             }
             return Statement;
+        }
+
+        public void UpdateBusyTime(BusyTime busyTime)
+        {
+            _db.BusyTime.Add(busyTime);
+            _db.SaveChanges();
         }
 
         public void UpdateGroup(List<Statement> statements)

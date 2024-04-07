@@ -14,4 +14,6 @@ public interface IStatementRepository
     int GetNextApplicationNumber();
     void UpdateIndivid(Statement Statement);
     void UpdateGroup(List<Statement> Statement);
+    List<BusyTime> GetBusyTime();
+    void UpdateBusyTime(BusyTime busyTime);
 }

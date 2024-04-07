@@ -35,6 +35,40 @@ public class StatementController : Controller
     }
     #endregion
 
+    #region Вывести все занятое время
+    [HttpGet("GetBusyTime")]
+    public async Task<ActionResult> GetBusyTime()
+    {
+        try
+        {
+            return Ok(_statementRepository.GetBusyTime());
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+    #endregion
+
+    #region Добавить занятое время
+    [HttpPost("UpdateBusyTime")]
+    public async Task<ActionResult> UpdateBusyTime(Statement statement)
+    {
+        BusyTime busyTime = new BusyTime();
+        busyTime.BusyBeginDate = statement.BeginDate;
+        busyTime.BusyEndDate = statement.EndDate;
+        try
+        {
+            _statementRepository.UpdateBusyTime(busyTime);
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+    #endregion
+
     #region Отправка индивидуальной заявки
 
     [HttpPost("CreateIndivid")]
