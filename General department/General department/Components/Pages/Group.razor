@@ -95,8 +95,6 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td><input @bind-value="Begin" type="datetime-local"></td>
-                        <td><input @bind-value="End" type="datetime-local"></td>
                         <InputSelect @bind-Value="Status">
                             <option value="0">Одобрено</option>
                             <option value="1">Недостоверные данные</option>
@@ -106,30 +104,29 @@
                 </tbody>
             </table>
             <button class="btn btn-primary" @onclick="Push">Отправить</button>
-            <div class="mb-3">
-                <label for="datePicker" class="form-label">Выберите дату</label>
-                <input type="date" id="datePicker" @onchange="UpdateDate" class="form-control" />
+            <div class="form-group">
+            <label for="date">Дата:</label>
+                <input type="date" id="date" @onchange="@(date => UpdateTimeOptions(date))" />
             </div>
 
-            <div class="mb-3">
-                <label for="startTime" class="form-label">Время начала</label>
-                <select id="startTime" class="form-select" @onchange="UpdateEndTimeOptions">
-                    <option value="">Выберите время начала...</option>
+            <div class="form-group">
+                <label for="startTime">Начало времени:</label>
+                <InputSelect id="startTime" @bind-Value="Begin">
                     @foreach (var time in StartTimes)
                     {
                         <option value="@time">@time.ToString("HH:mm")</option>
                     }
-                </select>
+                </InputSelect>
             </div>
-            <div class="mb-3">
-                <label for="endTime" class="form-label">Время конца</label>
-                <select id="endTime" class="form-select">
-                    <option value="">Выберите время конца...</option>
+
+            <div class="form-group">
+                <label for="endTime">Конец времени:</label>
+                <InputSelect id="endTime" @bind-Value="End">
                     @foreach (var time in EndTimes)
                     {
                         <option value="@time">@time.ToString("HH:mm")</option>
                     }
-                </select>
+                </InputSelect>
             </div>
         </center>
     }
@@ -141,13 +138,13 @@
     public List<Statement> Statements = new List<Statement>();
     static HttpClient Http = new HttpClient();
     int Status = 0;
-    DateTime SelectedDate { get; set; }
+    DateTime SelectedDate { get; set; }// = DateTime.Now;
     List<DateTime> StartTimes { get; set; } = new List<DateTime>();
     List<DateTime> EndTimes { get; set; } = new List<DateTime>();
-    List<DateTime> OccupiedTimes { get; set; } = new List<DateTime>(); // Загрузите занятые времена из базы данных
+    private List<BusyTime> busyTimes = new List<BusyTime>();
 
 
-    DateTime Begin = DateTime.Now, End = DateTime.Now;
+    DateTime Begin, End;
 
     protected override async Task OnInitializedAsync()
     {
@@ -157,46 +154,65 @@
             Statements = await response.Content.ReadFromJsonAsync<List<Statement>>();
         }
 
-        // Заполните список возможных времен начала и занятые времена из базы данных
-        for (int hour = 8; hour <= 20; hour++)
+        busyTimes = await Http.GetFromJsonAsync<List<BusyTime>>($"https://localhost:7244/api/Statement/GetBusyTime");
+        GenerateTimeOptions();
+    }
+
+    private void UpdateTimeOptions(ChangeEventArgs e)
+    {
+        if (DateTime.TryParse(e.Value.ToString(), out DateTime selectedDate))
         {
-            for (int minute = 0; minute <= 50; minute += 10) // Интервал в 10 минут
+            SelectedDate = selectedDate;
+            // Очистка текущих списков времени
+            StartTimes.Clear();
+            EndTimes.Clear();
+
+            // Генерация новых списков времени на основе выбранной даты и занятых времен
+            GenerateTimeOptions();
+        }
+        else
+        {
+            Console.WriteLine("Что-то не так!!!");
+        }
+    }
+
+    private void GenerateTimeOptions()
+    {
+        var allTimes = new List<DateTime>();
+        var currentDate = SelectedDate.Date;
+        for (var hour = 8; hour <= 20; hour++)
+        {
+            for (var minute = 0; minute <= 50; minute += 10)
             {
-                StartTimes.Add(new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, hour, minute, 0));
+                allTimes.Add(new DateTime(currentDate.Year, currentDate.Month, currentDate.Day, hour, minute, 0));
             }
         }
-        // Пример занятых времен
-        OccupiedTimes.Add(new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 10, 0, 0));
-        OccupiedTimes.Add(new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 11, 0, 0));
+
+        // Фильтрация доступных времен
+        StartTimes = allTimes.Except(busyTimes.SelectMany(bt => GenerateTimes(bt.BusyBeginDate, bt.BusyEndDate))).ToList();
+        EndTimes = allTimes.Except(busyTimes.SelectMany(bt => GenerateTimes(bt.BusyBeginDate, bt.BusyEndDate))).ToList();
     }
 
-    void UpdateEndTimeOptions(ChangeEventArgs e)
+    private IEnumerable<DateTime> GenerateTimes(DateTime begin, DateTime end)
     {
-        var selectedStartTime = DateTime.Parse(e.Value.ToString());
-        // Фильтруйте список времен конца, исключая занятые времена и время начала
-        EndTimes = StartTimes.Where(time => time != selectedStartTime && !OccupiedTimes.Contains(time)).ToList();
-    }
-
-    void UpdateDate(ChangeEventArgs e)
-    {
-        SelectedDate = DateTime.Parse(e.Value.ToString());
-        UpdateAvailableTimes();
-    }
-
-    async Task UpdateAvailableTimes()
-    {
-        // Получите все записи с API
-        var response = await Http.GetAsync($"https://localhost:7244/api/Statement/GetBusyTime");
-        if (response.IsSuccessStatusCode)
+        var times = new List<DateTime>();
+        for (var time = begin; time < end; time = time.AddMinutes(10))
         {
-            var allAppointments = await response.Content.ReadFromJsonAsync<List<BusyTime>>();
-            // Фильтруйте список записей, оставляя только те, которые соответствуют выбранной дате
-            var filteredAppointments = allAppointments.Where(a => a.BusyBeginDate.Date == SelectedDate.Date).ToList();
-            // Преобразуйте список записей в список времен начала и конца
-            OccupiedTimes = filteredAppointments.SelectMany(a => new[] { a.BusyBeginDate, a.BusyEndDate }).ToList();
-            // Обновите список доступных времен
-            //UpdateEndTimeOptions(null);
+            times.Add(time);
         }
+        return times;
+    }
+
+    private void UpdateEndTimes()
+    {
+        // Обновление списка доступных конечных времен на основе выбранного начального времени
+        EndTimes = EndTimes.Where(t => t > Begin).ToList();
+    }
+
+    private void UpdateStartTimes()
+    {
+        // Обновление списка доступных начальных времен на основе выбранного конечного времени
+        StartTimes = StartTimes.Where(t => t < End).ToList();
     }
 
     private async Task BlackList(string passport)
