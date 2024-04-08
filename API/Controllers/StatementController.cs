@@ -124,6 +124,24 @@ public class StatementController : Controller
     }
     #endregion
 
+    #region Изменение индивидуальной заявки
+
+    [HttpPost("UpdateIndivid")]
+    public ActionResult UpdateIndivid([FromBody] Statement Statement)
+    {
+        try
+        {
+            _statementRepository.UpdateIndivid(Statement);
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+
+    }
+    #endregion
+
     #region Вывести все заявки
     [HttpGet("GetStatement")]
     public ActionResult GetStatement()

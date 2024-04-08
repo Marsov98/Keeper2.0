@@ -32,6 +32,7 @@
                         <td><h3>Дата рождения</h3></td>
                         <td><h3>Паспорт</h3></td>
                         <td><h3>Примечание</h3></td>
+                        <td><h3>ЧС</h3></td>
                     </tr>
                 </thead>
                 <tbody>
@@ -85,10 +86,51 @@
                         <td>
                             <h3>@Statements.Note</h3>
                         </td>
+                        <td>
+                            <input type="submit" class="btn btn-primary" @onclick="() => BlackList(Statements.Passport)" value="Ложные данные" />
+                        </td>
                     </tr>
-
                 </tbody>
             </table>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <td><h3>Дата</h3></td>
+                        <td><h3>Время начала</h3></td>
+                        <td><h3>Время конца</h3></td>
+                        <td><h3>Статус</h3></td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><input type="date" id="date" @onchange="@(date => UpdateTimeOptions(date))" /></td>
+                        <td>
+                            <select id="startTime" @onchange="@(date => UpdateEndTimes(date))">
+                                @foreach (var time in StartTimes)
+                                {
+                                    <option value="@time">@time.ToString("HH:mm")</option>
+                                }
+                            </select>
+                        </td>
+                        <td>
+                            <InputSelect id="endTime" @bind-Value="End">
+                                @foreach (var time in EndTimes)
+                                {
+                                    <option value="@time">@time.ToString("HH:mm")</option>
+                                }
+                            </InputSelect>
+                        </td>
+                        <td>
+                            <InputSelect @bind-Value="Status">
+                                <option value="0">Одобрено</option>
+                                <option value="1">Недостоверные данные</option>
+                                <option value="2">Отсутствие прикрепленных файлов</option>
+                            </InputSelect>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <button class="btn btn-primary" @onclick="Push">Отправить</button>
         </center>
     }
 </body>
@@ -98,6 +140,13 @@
     public int Id { get; set; }
     public Statement Statements = new Statement();
     static HttpClient Http = new HttpClient();
+    int Status = 0;
+    DateTime SelectedDate { get; set; }// = DateTime.Now;
+    List<DateTime> StartTimes { get; set; } = new List<DateTime>();
+    List<DateTime> EndTimes { get; set; } = new List<DateTime>();
+    private List<BusyTime> busyTimes = new List<BusyTime>();
+
+    DateTime Begin, End;
 
     protected override async Task OnInitializedAsync()
     {
@@ -106,15 +155,124 @@
         {
             Statements = await response.Content.ReadFromJsonAsync<Statement>();
         }
+        busyTimes = await Http.GetFromJsonAsync<List<BusyTime>>($"https://localhost:7244/api/Statement/GetBusyTime");
+        GenerateTimeOptions();
     }
 
-    /*private void OnOpenWindowClicked()
+    private void UpdateTimeOptions(ChangeEventArgs e)
     {
-        var secondWindow = new Window()
-            {
-                Page = new NewPage1("Meow~")
-            };
+        if (DateTime.TryParse(e.Value.ToString(), out DateTime selectedDate))
+        {
+            SelectedDate = selectedDate;
+            // Очистка текущих списков времени
+            StartTimes.Clear();
+            EndTimes.Clear();
 
-        Application.Current.OpenWindow(secondWindow);
-    }*/
+            // Генерация новых списков времени на основе выбранной даты и занятых времен
+            GenerateTimeOptions();
+        }
+        else
+        {
+            Console.WriteLine("Что-то не так!!!");
+        }
+    }
+
+    private void GenerateTimeOptions()
+    {
+        var allTimes = new List<DateTime>();
+        var currentDate = SelectedDate.Date;
+        for (var hour = 8; hour <= 20; hour++)
+        {
+            if (hour != 20)
+            {
+                for (var minute = 0; minute <= 50; minute += 10)
+                {
+                    allTimes.Add(new DateTime(currentDate.Year, currentDate.Month, currentDate.Day, hour, minute, 0));
+                }
+            }
+        }
+
+        // Фильтрация доступных времен
+        StartTimes = allTimes.Except(busyTimes.SelectMany(bt => GenerateTimes(bt.BusyBeginDate, bt.BusyEndDate))).ToList();
+        EndTimes = allTimes.Except(busyTimes.SelectMany(bt => GenerateTimes(bt.BusyBeginDate, bt.BusyEndDate))).ToList();
+    }
+
+    private IEnumerable<DateTime> GenerateTimes(DateTime begin, DateTime end)
+    {
+        var times = new List<DateTime>();
+        for (var time = begin; time < end; time = time.AddMinutes(10))
+        {
+            times.Add(time);
+        }
+        return times;
+    }
+
+    private void UpdateEndTimes(ChangeEventArgs e)
+    {
+        DateTime.TryParse(e.Value.ToString(), out DateTime selectedDate);
+        Begin = selectedDate;
+        // Получаем список занятых времен, которые начинаются после выбранного времени начала
+        var busyTimesAfterBegin = busyTimes
+            .Where(bt => bt.BusyBeginDate > Begin)
+            .OrderBy(bt => bt.BusyBeginDate)
+            .ToList();
+
+        // Если занятые времена есть после выбранного времени начала,
+        // то конечное время должно быть меньше времени начала следующего занятого времени
+        if (busyTimesAfterBegin.Any())
+        {
+            var nextBusyTimeBegin = busyTimesAfterBegin.First().BusyBeginDate;
+            EndTimes = EndTimes.Where(t => t < nextBusyTimeBegin && t > Begin).ToList();
+        }
+        else
+        {
+            // Если занятых времен после выбранного времени начала нет,
+            // то конечное время может быть любым временем после выбранного времени начала
+            EndTimes = EndTimes.Where(t => t > Begin).ToList();
+        }
+    }
+
+    private void UpdateStartTimes()
+    {
+        // Обновление списка доступных начальных времен на основе выбранного конечного времени
+        StartTimes = StartTimes.Where(t => t < End).ToList();
+    }
+
+    private async Task BlackList(string passport)
+    {
+        using var response = await Http.GetAsync($"https://localhost:7244/api/User/BlackList/{passport}");
+        if (response.IsSuccessStatusCode)
+        {
+            Console.WriteLine("Пользователь добавлен в ЧС");
+        }
+    }
+
+    private async Task Push()
+    {
+
+        Statements.BeginDate = Begin;
+        Statements.EndDate = End;
+        switch (Status)
+        {
+            case 1:
+            case 2:
+                Statements.Status = "Заявка на посещение объекта КИИ отклонена в связи с нарушением Федерального закона от 26.07.2017 № 194-ФЗ «О внесении изменений в Уголовный кодекс Российской Федерации и статью 151 Уголовно-процессуального кодекса Российской Федерации в связи с принятием Федерального закона " + '"' + "О безопасности критической информационной инфраструктуры Российской Федерации" + '"' + " по причине указания заявителем заведомо недостоверных данных";
+                break;
+            default:
+                Statements.Status = "Одобрено";
+                break;
+        }
+
+        using var response = await Http.PostAsJsonAsync($"https://localhost:7244/api/Statement/UpdateIndivid", Statements);
+        if (response.IsSuccessStatusCode)
+        {
+            Console.WriteLine("Готово");
+        }
+        using var responseTime = await Http.PostAsJsonAsync($"https://localhost:7244/api/Statement/UpdateBusyTime", Statements);
+        if (responseTime.IsSuccessStatusCode)
+        {
+            Console.WriteLine("Готово");
+        }
+    }
+
 }

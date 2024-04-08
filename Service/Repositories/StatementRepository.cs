@@ -39,9 +39,6 @@ namespace Service.Repositories
         {
                 _db.Statement.Add(Statement);
                 _db.SaveChanges();
-            
-            
-            
         }
 
         public List<BusyTime> GetBusyTime()
@@ -127,7 +124,10 @@ namespace Service.Repositories
 
         public void UpdateIndivid(Statement Statement)
         {
-            throw new NotImplementedException();
+            Statement.Employees = null;
+            _db.Attach(Statement);
+            _db.Entry(Statement).State = EntityState.Modified;
+            _db.SaveChanges();
         }
     }
 }
