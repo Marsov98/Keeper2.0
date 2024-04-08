@@ -12,6 +12,7 @@
 @inject IHttpContextAccessor HttpContextAccessor
 @inject IMemoryCache Cache
 @inject NavigationManager manager
+@inject IJSRuntime JSRuntime
 
 <PageTitle>Авторизация</PageTitle>
 
@@ -20,6 +21,7 @@
 <head>
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="js/cookieInterop.js"></script>
 </head>
 
 <body>
@@ -75,15 +77,11 @@
             var person = await response.Content.ReadFromJsonAsync<Users>();
             Console.WriteLine($"ID пользователя - {person.Id}");
             // Добавление cookie
-            var cookieOptions = new CookieOptions
-                {
-                    HttpOnly = true, // Установка флага HttpOnly для защиты от кражи cookie через JavaScript
-                    Secure = true, // Установка флага Secure для передачи cookie только по защищенному соединению
-                    SameSite = SameSiteMode.Strict // Установка политики SameSite для предотвращения атак CSRF
-                };
-            //HttpContextAccessor.HttpContext.Response.Cookies.Append("UserId", person.Id.ToString(), cookieOptions);
+            await JSRuntime.InvokeVoidAsync("cookieInterop.setCookie", "Cookie", person.Id, 30);
 
-            manager.NavigateTo($"/{@person.Id}");
+
+
+            manager.NavigateTo("/" + person.Id);
         }
         else
         {

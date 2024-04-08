@@ -8,10 +8,12 @@
 @using Microsoft.AspNetCore.Http
 @using System.Net.Http
 @using Microsoft.Extensions.Caching.Memory
+@using System.Text.Json
 
 @inject IHttpContextAccessor HttpContextAccessor
 @inject IMemoryCache Cache
 @inject NavigationManager manager
+@inject IJSRuntime JSRuntime
 
 <PageTitle>Регистрация</PageTitle>
 
@@ -20,6 +22,7 @@
 <head>
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="js/cookieInterop.js"></script>
 </head>
 
 <body>
@@ -28,7 +31,7 @@
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">
-                        <h1>Авторизация</h1>
+                        <h1>Регистрация</h1>
                     </div>
                     <div class="card-body">
                         <form method="post" class="form-signin" @onsubmit="Submit" @formname="starship-plain-form">
@@ -76,15 +79,23 @@
 
     private async Task Submit()
     {
-        // Http.Timeout = TimeSpan.FromMinutes(30);
         using var response = await Http.PostAsJsonAsync($"https://localhost:7244/api/User/SignUp", InputSignUp);
         if (response.IsSuccessStatusCode)
         {
+            var content = await response.Content.ReadAsStringAsync();
+            if (!string.IsNullOrEmpty(content))
+            {
+                var person = JsonSerializer.Deserialize<Users>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            }
             manager.NavigateTo("/Auth");
         }
         else
         {
-            await response.Content.ReadAsStringAsync();
+            // Обработка ошибки, например, вывод сообщения об ошибке
+            var errorContent = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"Error: {errorContent}");
         }
     }
+
 }
