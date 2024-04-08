@@ -18,12 +18,13 @@
     {
         <center>
             <div style="background: green; border-radius: 8px">
-                <h2>Все заявок</h2>
+                <h2>Одобренные заявок</h2>
                 <InputSelect @bind-Value="Select">
                     <option value="0">Все заявки</option>
                     <option value="1">Индивидуальные</option>
                     <option value="2">Групповые</option>
                 </InputSelect>
+                <h2>Поиск</h2>
             </div>
 
 
@@ -38,7 +39,6 @@
                         }
                         <td><h3>Подразделение</h3></td>
                         <td align="center"><h3>Дата и время</h3></td>
-                        <td><h3>Статус</h3></td>
                     </tr>
                 </thead>
                 <tbody>
@@ -79,9 +79,6 @@
                                 <td>
                                     <h3>@statements.BeginDate - @statements.EndDate</h3>
                                 </td>
-                                <td>
-                                    <h3>@statements.Status</h3>
-                                </td>
                             </tr>
                         }
                         if (Select == 1)
@@ -100,9 +97,6 @@
                                     </td>
                                     <td>
                                         <h3>@statements.BeginDate - @statements.EndDate</h3>
-                                    </td>
-                                    <td>
-                                        <h3>@statements.Status</h3>
                                     </td>
                                 </tr>
                             }
@@ -127,9 +121,6 @@
                                     <td>
                                         <h3>@statements.BeginDate - @statements.EndDate</h3>
                                     </td>
-                                    <td>
-                                        <h3>@statements.Status</h3>
-                                    </td>
                                 </tr>
                             }
                         }
@@ -153,4 +144,5 @@
             Statements = await response.Content.ReadFromJsonAsync<List<Statement>>();
         }
     }
+
 }

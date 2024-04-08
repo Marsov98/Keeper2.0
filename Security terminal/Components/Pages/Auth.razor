@@ -59,7 +59,7 @@
         {
             var person = await response.Content.ReadFromJsonAsync<Users>();
 
-            if (person.Role.Name == "Админ")
+            if (person.Role.Name == "Охрана")
             {
                 manager.NavigateTo($"/Home");
             }
