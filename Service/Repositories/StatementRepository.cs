@@ -37,8 +37,11 @@ namespace Service.Repositories
 
         public void CreateIndivid(Statement Statement)
         {
-            _db.Statement.Add(Statement);
-            _db.SaveChanges();
+                _db.Statement.Add(Statement);
+                _db.SaveChanges();
+            
+            
+            
         }
 
         public List<BusyTime> GetBusyTime()

@@ -72,12 +72,12 @@ public class StatementController : Controller
     #region Отправка индивидуальной заявки
 
     [HttpPost("CreateIndivid")]
-    public ActionResult CreateIndivid([FromBody] Statement Individ)
+    public ActionResult CreateIndivid([FromBody] Statement InputStatement)
     {
 
         try
         {
-            _statementRepository.CreateIndivid(Individ);
+            _statementRepository.CreateIndivid(InputStatement);
             return Ok();
         }
         catch (Exception ex)
