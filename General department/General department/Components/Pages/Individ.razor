@@ -250,8 +250,6 @@
     private async Task Push()
     {
 
-        Statements.BeginDate = Begin;
-        Statements.EndDate = End;
         switch (Status)
         {
             case 1:
@@ -259,6 +257,8 @@
                 Statements.Status = "Заявка на посещение объекта КИИ отклонена в связи с нарушением Федерального закона от 26.07.2017 № 194-ФЗ «О внесении изменений в Уголовный кодекс Российской Федерации и статью 151 Уголовно-процессуального кодекса Российской Федерации в связи с принятием Федерального закона " + '"' + "О безопасности критической информационной инфраструктуры Российской Федерации" + '"' + " по причине указания заявителем заведомо недостоверных данных";
                 break;
             default:
+                Statements.BeginDate = Begin;
+                Statements.EndDate = End;
                 Statements.Status = "Одобрено";
                 break;
         }
@@ -268,10 +268,13 @@
         {
             Console.WriteLine("Готово");
         }
-        using var responseTime = await Http.PostAsJsonAsync($"https://localhost:7244/api/Statement/UpdateBusyTime", Statements);
-        if (responseTime.IsSuccessStatusCode)
+        if(Status == 0)
         {
-            Console.WriteLine("Готово");
+            using var responseTime = await Http.PostAsJsonAsync($"https://localhost:7244/api/Statement/UpdateBusyTime", Statements);
+            if (responseTime.IsSuccessStatusCode)
+            {
+                Console.WriteLine("Готово");
+            }
         }
     }
 

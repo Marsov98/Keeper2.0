@@ -25,6 +25,7 @@
                     <option value="2">Групповые</option>
                 </InputSelect>
                 <h2>Поиск</h2>
+                <input @oninput="Filter" placeholder="Поиск..." />
             </div>
 
 
@@ -42,7 +43,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var statements in Statements)
+                    @foreach (var statements in FilteredStatements)
                     {
                         if (Select == 0)
                         {
@@ -61,7 +62,7 @@
                                     </td>
                                 }
                                 <td>
-                                    <h3>@statements.FirstName @statements.Name @statements.Name</h3>
+                                    <h3>@statements.FirstName @statements.Name @statements.LastName</h3>
                                 </td>
                                 <td>
                                     @if (statements.ApplicationNumber != null)
@@ -90,7 +91,7 @@
                                         <a class="btn btn-primary" href="/Individ/@statements.Id">@statements.Id</a>
                                     </td>
                                     <td>
-                                        <h3>@statements.FirstName @statements.Name @statements.Name</h3>
+                                        <h3>@statements.FirstName @statements.Name @statements.LastName</h3>
                                     </td>
                                     <td>
                                         <h3>@statements.Employees.Division.Info</h3>
@@ -110,7 +111,7 @@
                                         <a class="btn btn-primary" href="/Group/@statements.ApplicationNumber">@statements.Id</a>
                                     </td>
                                     <td>
-                                        <h3>@statements.FirstName @statements.Name @statements.Name</h3>
+                                        <h3>@statements.FirstName @statements.Name @statements.LastName</h3>
                                     </td>
                                     <td>
                                         <h3>@statements.ApplicationNumber</h3>
@@ -134,7 +135,9 @@
 @code {
     int Select = 0;
     public List<Statement> Statements = new List<Statement>();
+    public List<Statement> FilteredStatements = new List<Statement>();
     static HttpClient Http = new HttpClient();
+    public string SearchText = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -143,6 +146,19 @@
         {
             Statements = await response.Content.ReadFromJsonAsync<List<Statement>>();
         }
+        FilteredStatements = Statements;
     }
 
+    public void Filter(ChangeEventArgs e)
+    {
+        SearchText = e.Value.ToString();
+        FilteredStatements = Statements.Where(item => item.FirstName.ToLower().Contains(SearchText.ToLower()) ||
+                                                     item.Name.ToLower().Contains(SearchText.ToLower()) ||
+                                                     item.LastName.ToLower().Contains(SearchText.ToLower()) ||
+                                                     item.Passport.ToLower().Contains(SearchText.ToLower()) ||
+                                                     (item.FirstName.ToLower() + " " + item.Name.ToLower()).Contains(SearchText.ToLower()) ||
+                                                     (item.Name.ToLower() + " " + item.LastName.ToLower()).Contains(SearchText.ToLower()) ||
+                                                     (item.FirstName.ToLower() + " " + item.Name.ToLower() + " " + item.LastName.ToLower()).Contains(SearchText.ToLower()) ||
+                                                     (item.FirstName.ToLower() + " " + item.Name.ToLower() + " " + item.LastName.ToLower() + " " + item.Passport.ToLower()).Contains(SearchText.ToLower())).ToList();
+    }
 }
