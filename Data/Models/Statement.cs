@@ -3,7 +3,7 @@
 
 public class Statement : Base
 {
-    public int? ApplicationNumber { get; set; }
+    public int ApplicationNumber { get; set; }
     public DateTime BeginDate { get; set; }
     public DateTime EndDate { get; set; }
     public string FirstName { get; set; }

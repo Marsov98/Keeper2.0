@@ -87,9 +87,10 @@ namespace Service.Repositories
 
         public int GetNextApplicationNumber()
         {
-            var NextApplicationNumber = _db.Statement.Max(u => u.ApplicationNumber) + 1;
-            return (int)NextApplicationNumber;
+            var NextApplicationNumber = _db.Statement.Max(u => (int?)u.ApplicationNumber) ?? 0;
+            return NextApplicationNumber + 1;
         }
+
 
 
         public List<Statement> GetStatement()
@@ -99,7 +100,15 @@ namespace Service.Repositories
             int Count = Statement.Count();
             for (int i = 0; i < Count; i++)
             {
-                Statement[i].Employees = Employees[Statement[i].EmployeeId - 1];
+                int index = Statement[i].EmployeeId - 1;
+                if (index >= 0 && index < Employees.Count)
+                {
+                    Statement[i].Employees = Employees.ElementAtOrDefault(index);
+                }
+                else
+                {
+                    index = 1;
+                }
             }
             return Statement;
         }

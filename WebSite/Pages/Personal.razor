@@ -18,7 +18,7 @@
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-    <a class="btn btn-primary" href="/Home">Главная</a>
+    <a class="btn btn-primary" href="/">Главная</a>
     @if (Division == null && Employees == null)
     {
         <p><em>Загрузка...</em></p>
@@ -235,28 +235,42 @@
 
     private async Task Submit()
     {
-        InputStatement.EmployeeId = SelectedEmployeeId;
-        InputStatement.Passport = $"{sPassport} {nPassport}";
-        using var response = await Http.PostAsJsonAsync($"https://localhost:7244/api/Statement/CreateIndivid", InputStatement);
-        if (response.IsSuccessStatusCode)
+        try
         {
-            NotificationOptions options = new NotificationOptions
-                {
-                    Body = "Заявка успешно отправлена!",
-                };
+            InputStatement.ApplicationNumber = StatementRepository.GetNextApplicationNumber();
+            InputStatement.EmployeeId = SelectedEmployeeId;
+            InputStatement.Passport = $"{sPassport} {nPassport}";
+            using var response = await Http.PostAsJsonAsync($"https://localhost:7244/api/Statement/CreateIndivid", InputStatement);
+            if (response.IsSuccessStatusCode)
+            {
+                NotificationOptions options = new NotificationOptions
+                    {
+                        Body = "Заявка успешно отправлена!",
+                    };
 
-            await NotificationService.CreateAsync("Все хорошо", options);
-            manager.NavigateTo("/");
+                await NotificationService.CreateAsync("Все хорошо", options);
+                manager.NavigateTo("/");
+            }
+            else
+            {
+                NotificationOptions options = new NotificationOptions
+                    {
+                        Body = "Что-то пошло не так",
+                    };
+
+                await NotificationService.CreateAsync("Все плохо", options);
+                await response.Content.ReadAsStringAsync();
+            }
         }
-        else
+        catch (Exception ex)
         {
+            Console.WriteLine($"Ошибка при отправке запроса: {ex.Message}");
             NotificationOptions options = new NotificationOptions
                 {
-                    Body = "Что-то пошло не так",
+                    Body = $"Ошибка при отправке запроса: {ex.Message}",
                 };
-
-            await NotificationService.CreateAsync("Все плохо", options);
-            await response.Content.ReadAsStringAsync();
+            await NotificationService.CreateAsync("Ошибка", options);
         }
     }
+
 }
