@@ -24,5 +24,8 @@ public class Statement : Base
 
     public string? Status { get; set; }
     public bool? blackList { get; set; }
+
+    public int VisitTimeId { get; set; } = 0;
+    public VisitTime? VisitTime { get; set; }
 }
 
