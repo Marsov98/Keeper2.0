@@ -139,31 +139,6 @@ namespace Data.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("Data.Models.VisitTime", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("TimeEnd")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("TimeIn")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("TimeOut")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("TimeStart")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("VisitTime");
-                });
-
             modelBuilder.Entity("Statement", b =>
                 {
                     b.Property<int>("Id")
@@ -172,7 +147,7 @@ namespace Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("ApplicationNumber")
+                    b.Property<int?>("ApplicationNumber")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("BeginDate")
@@ -235,17 +210,12 @@ namespace Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("VisitTimeId")
-                        .HasColumnType("int");
-
                     b.Property<bool?>("blackList")
                         .HasColumnType("bit");
 
                     b.HasKey("Id");
 
                     b.HasIndex("EmployeesId");
-
-                    b.HasIndex("VisitTimeId");
 
                     b.ToTable("Statement");
                 });
@@ -276,15 +246,7 @@ namespace Data.Migrations
                         .WithMany()
                         .HasForeignKey("EmployeesId");
 
-                    b.HasOne("Data.Models.VisitTime", "VisitTime")
-                        .WithMany()
-                        .HasForeignKey("VisitTimeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Employees");
-
-                    b.Navigation("VisitTime");
                 });
 #pragma warning restore 612, 618
         }

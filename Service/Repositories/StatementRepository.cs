@@ -87,8 +87,8 @@ namespace Service.Repositories
 
         public int GetNextApplicationNumber()
         {
-            var NextApplicationNumber = _db.Statement.Max(u => (int?)u.ApplicationNumber)==null ? 1 : + 1;
-            return NextApplicationNumber;
+            var NextApplicationNumber = _db.Statement.Max(u => (int?)u.ApplicationNumber) ?? 0;
+            return NextApplicationNumber + 1;
         }
 
 
