@@ -79,7 +79,7 @@ public class StatementController : Controller
         try
         {
             _statementRepository.CreateIndivid(InputStatement);
-            return Ok();
+            return Ok(InputStatement);
         }
         catch (Exception ex)
         {

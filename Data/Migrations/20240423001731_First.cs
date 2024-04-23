@@ -6,11 +6,25 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Data.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class First : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "BusyTime",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    BusyBeginDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    BusyEndDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_BusyTime", x => x.Id);
+                });
+
             migrationBuilder.CreateTable(
                 name: "Division",
                 columns: table => new
@@ -88,7 +102,7 @@ namespace Data.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    ApplicationNumber = table.Column<int>(type: "int", nullable: true),
+                    ApplicationNumber = table.Column<int>(type: "int", nullable: false),
                     BeginDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     EndDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -100,11 +114,11 @@ namespace Data.Migrations
                     Note = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Birthday = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Passport = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Pdf = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
-                    Photo = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
+                    Pdf = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
+                    Photo = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
                     Target = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     EmployeeId = table.Column<int>(type: "int", nullable: false),
-                    EmployeesId = table.Column<int>(type: "int", nullable: true),
+                    EmployeesId = table.Column<int>(type: "int", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     blackList = table.Column<bool>(type: "bit", nullable: true)
                 },
@@ -115,7 +129,8 @@ namespace Data.Migrations
                         name: "FK_Statement_Employees_EmployeesId",
                         column: x => x.EmployeesId,
                         principalTable: "Employees",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
@@ -137,6 +152,9 @@ namespace Data.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "BusyTime");
+
             migrationBuilder.DropTable(
                 name: "Statement");
 

@@ -37,8 +37,15 @@ namespace Service.Repositories
 
         public void CreateIndivid(Statement Statement)
         {
+           try
+            {
                 _db.Statement.Add(Statement);
                 _db.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
         }
 
         public List<BusyTime> GetBusyTime()
@@ -87,8 +94,8 @@ namespace Service.Repositories
 
         public int GetNextApplicationNumber()
         {
-            var NextApplicationNumber = _db.Statement.Max(u => (int?)u.ApplicationNumber) ?? 0;
-            return NextApplicationNumber + 1;
+            var NextApplicationNumber = _db.Statement.Max(u => (int?)u.ApplicationNumber) == null ? 1 : + 1;
+            return NextApplicationNumber;
         }
 
 

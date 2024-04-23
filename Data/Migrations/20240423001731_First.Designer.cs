@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Data.Migrations
 {
     [DbContext(typeof(KeeperContext))]
-    [Migration("20240407103125_CreateMig123")]
-    partial class CreateMig123
+    [Migration("20240423001731_First")]
+    partial class First
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -150,7 +150,7 @@ namespace Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("ApplicationNumber")
+                    b.Property<int>("ApplicationNumber")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("BeginDate")
@@ -166,7 +166,7 @@ namespace Data.Migrations
                     b.Property<int>("EmployeeId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("EmployeesId")
+                    b.Property<int>("EmployeesId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("EndDate")
@@ -201,9 +201,11 @@ namespace Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<byte[]>("Pdf")
+                        .IsRequired()
                         .HasColumnType("varbinary(max)");
 
                     b.Property<byte[]>("Photo")
+                        .IsRequired()
                         .HasColumnType("varbinary(max)");
 
                     b.Property<string>("Status")
@@ -247,7 +249,9 @@ namespace Data.Migrations
                 {
                     b.HasOne("Data.Models.Employees", "Employees")
                         .WithMany()
-                        .HasForeignKey("EmployeesId");
+                        .HasForeignKey("EmployeesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Employees");
                 });
