@@ -52,6 +52,22 @@ namespace Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "VisitTime",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    TimeIn = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    TimeOut = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    TimeStart = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    TimeEnd = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_VisitTime", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Employees",
                 columns: table => new
                 {
@@ -114,13 +130,14 @@ namespace Data.Migrations
                     Note = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Birthday = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Passport = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Pdf = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
-                    Photo = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
+                    Pdf = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
+                    Photo = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
                     Target = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     EmployeeId = table.Column<int>(type: "int", nullable: false),
-                    EmployeesId = table.Column<int>(type: "int", nullable: false),
+                    EmployeesId = table.Column<int>(type: "int", nullable: true),
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    blackList = table.Column<bool>(type: "bit", nullable: true)
+                    blackList = table.Column<bool>(type: "bit", nullable: true),
+                    VisitTimeId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -129,6 +146,11 @@ namespace Data.Migrations
                         name: "FK_Statement_Employees_EmployeesId",
                         column: x => x.EmployeesId,
                         principalTable: "Employees",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Statement_VisitTime_VisitTimeId",
+                        column: x => x.VisitTimeId,
+                        principalTable: "VisitTime",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -142,6 +164,11 @@ namespace Data.Migrations
                 name: "IX_Statement_EmployeesId",
                 table: "Statement",
                 column: "EmployeesId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Statement_VisitTimeId",
+                table: "Statement",
+                column: "VisitTimeId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Users_RoleId",
@@ -163,6 +190,9 @@ namespace Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "Employees");
+
+            migrationBuilder.DropTable(
+                name: "VisitTime");
 
             migrationBuilder.DropTable(
                 name: "Role");

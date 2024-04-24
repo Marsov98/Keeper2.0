@@ -139,6 +139,31 @@ namespace Data.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("Data.Models.VisitTime", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("TimeEnd")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("TimeIn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("TimeOut")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("TimeStart")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("VisitTime");
+                });
+
             modelBuilder.Entity("Statement", b =>
                 {
                     b.Property<int>("Id")
@@ -163,7 +188,7 @@ namespace Data.Migrations
                     b.Property<int>("EmployeeId")
                         .HasColumnType("int");
 
-                    b.Property<int>("EmployeesId")
+                    b.Property<int?>("EmployeesId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("EndDate")
@@ -198,11 +223,9 @@ namespace Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<byte[]>("Pdf")
-                        .IsRequired()
                         .HasColumnType("varbinary(max)");
 
                     b.Property<byte[]>("Photo")
-                        .IsRequired()
                         .HasColumnType("varbinary(max)");
 
                     b.Property<string>("Status")
@@ -212,12 +235,17 @@ namespace Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("VisitTimeId")
+                        .HasColumnType("int");
+
                     b.Property<bool?>("blackList")
                         .HasColumnType("bit");
 
                     b.HasKey("Id");
 
                     b.HasIndex("EmployeesId");
+
+                    b.HasIndex("VisitTimeId");
 
                     b.ToTable("Statement");
                 });
@@ -246,11 +274,17 @@ namespace Data.Migrations
                 {
                     b.HasOne("Data.Models.Employees", "Employees")
                         .WithMany()
-                        .HasForeignKey("EmployeesId")
+                        .HasForeignKey("EmployeesId");
+
+                    b.HasOne("Data.Models.VisitTime", "VisitTime")
+                        .WithMany()
+                        .HasForeignKey("VisitTimeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Employees");
+
+                    b.Navigation("VisitTime");
                 });
 #pragma warning restore 612, 618
         }
