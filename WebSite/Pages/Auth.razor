@@ -68,6 +68,15 @@
 
     protected override void OnInitialized() => InputAuth ??= new();
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JSRuntime.InvokeAsync<string>("cookieInterop.deleteCookie", "Cookie");
+            StateHasChanged();
+        }
+    }
+
     private async Task Submit()
     {
         // Http.Timeout = TimeSpan.FromMinutes(30);

@@ -3,6 +3,7 @@ using Aspose.Cells.Charts;
 using Data;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 using Service.Interfaces;
 using Service.Repositories;
 
@@ -62,5 +63,6 @@ app.UseRouting();
 
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
+
 
 app.Run();
