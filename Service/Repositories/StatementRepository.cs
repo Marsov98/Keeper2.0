@@ -48,6 +48,13 @@ namespace Service.Repositories
             }
         }
 
+        public async Task<int> CreateVisitTimeAsync(VisitTime VisitTime)
+        {
+            _db.VisitTime.Add(VisitTime);
+            await _db.SaveChangesAsync();
+            return VisitTime.Id;
+        }
+
         public List<BusyTime> GetBusyTime()
         {
             return _db.BusyTime.ToList();
@@ -88,6 +95,10 @@ namespace Service.Repositories
             List<Employees> Employees = GetEmployees();
 
             Statement.Employees = Employees[Statement.EmployeeId - 1];
+            if(Statement.VisitTimeId != null)
+            {
+                Statement.VisitTime = GetVisitTimeById(Statement.VisitTimeId);
+            }
 
             return Statement;
         }
@@ -123,6 +134,11 @@ namespace Service.Repositories
             return Statement;
         }
 
+        public VisitTime GetVisitTimeById(int? Id)
+        {
+            return _db.VisitTime.First(x => x.Id == Id);
+        }
+
         public void UpdateBusyTime(BusyTime busyTime)
         {
             _db.BusyTime.Add(busyTime);
@@ -146,6 +162,13 @@ namespace Service.Repositories
             Statement.Employees = null;
             _db.Attach(Statement);
             _db.Entry(Statement).State = EntityState.Modified;
+            _db.SaveChanges();
+        }
+
+        public void UpdateVisitTime(VisitTime UpdateVisitTime)
+        {
+            _db.Attach(UpdateVisitTime);
+            _db.Entry(UpdateVisitTime).State = EntityState.Modified;
             _db.SaveChanges();
         }
     }

@@ -12,6 +12,9 @@ public interface IStatementRepository
     void CreateIndivid(Statement Statement);
     void CreateGroup(List<Statement> Statement);
     int GetNextApplicationNumber();
+    Task<int> CreateVisitTimeAsync(VisitTime VisitTime);
+    void UpdateVisitTime(VisitTime UpdateVisitTime);
+    VisitTime GetVisitTimeById(int Id);
     void UpdateIndivid(Statement Statement);
     void UpdateGroup(List<Statement> Statement);
     List<BusyTime> GetBusyTime();

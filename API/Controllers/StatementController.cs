@@ -107,6 +107,26 @@ public class StatementController : Controller
     }
     #endregion
 
+    #region Добавление времени прихода на охрану
+
+    [HttpGet("CreateVisitTime")]
+    public async Task<ActionResult> CreateVisitTime()
+    {
+        VisitTime visitTime = new VisitTime();
+        visitTime.TimeIn = DateTime.Now;
+        try
+        {
+            int TimeId = await _statementRepository.CreateVisitTimeAsync(visitTime);
+            return Ok(TimeId);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+
+    }
+    #endregion
+
     #region Изменение групповой заявки
 
     [HttpPost("UpdateGroup")]
@@ -133,6 +153,24 @@ public class StatementController : Controller
         try
         {
             _statementRepository.UpdateIndivid(Statement);
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+
+    }
+    #endregion
+
+    #region Изменение индивидуальной заявки
+
+    [HttpPost("UpdateVisitTime")]
+    public ActionResult UpdateVisitTime(VisitTime visitTime)
+    {
+        try
+        {
+            _statementRepository.UpdateVisitTime(visitTime);
             return Ok();
         }
         catch (Exception ex)
