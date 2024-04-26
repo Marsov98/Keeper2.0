@@ -98,7 +98,10 @@
             }
             else
             {
-                <button class="btn btn-primary" @onclick="GoOut">Ушел</button>
+                if (Statements.VisitTime.TimeEnd == null && Statements.VisitTime.TimeOut == null)
+                {
+                    <button class="btn btn-primary" @onclick="GoOut">Ушел</button>
+                } 
             }
         </center>
     }
@@ -141,6 +144,7 @@
             {
                 Console.WriteLine("Готово");
             }
+            OnInitializedAsync();
         }
     }
 
@@ -151,7 +155,7 @@
         if (response.IsSuccessStatusCode)
         {
             Console.WriteLine("Готово");
-
         }
+        OnInitializedAsync();
     }
 }

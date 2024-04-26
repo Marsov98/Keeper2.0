@@ -237,7 +237,6 @@
     {
         try
         {
-            InputStatement.ApplicationNumber = StatementRepository.GetNextApplicationNumber();
             InputStatement.EmployeeId = SelectedEmployeeId;
             InputStatement.Passport = $"{sPassport} {nPassport}";
             using var response = await Http.PostAsJsonAsync($"https://localhost:7244/api/Statement/CreateIndivid", InputStatement);
