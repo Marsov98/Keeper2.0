@@ -6,18 +6,21 @@
 @using Syncfusion.Blazor.Buttons
 @using Microsoft.AspNetCore.Components.Forms
 @using Append.Blazor.Notifications
+@using Microsoft.AspNetCore.Components
 
 @inject INotificationService NotificationService
 @inject IHttpContextAccessor HttpContextAccessor
 @inject NavigationManager manager
 @inject StatementRepository StatementRepository
 @inject IWebHostEnvironment _appEnvironment
+@inject IJSRuntime JSRuntime
 
 
 <html>
 <head>
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/imask/6.0.7/imask.min.js"></script>
 </head>
 <body>
     <a class="btn btn-primary" href="/Home">Главная</a>
@@ -38,16 +41,22 @@
                             <center><h4>Срок действия заявки:</h4></center>
                             <h5>
                                 C*
-                                <InputDate @bind-Value="@InputStatement!.BeginDate" required="required" />
+                                <InputDate @bind-Value="@InputStatement.BeginDate"
+                                           min="@minBeginDate" max="@maxBeginDate" required="required"
+                                           @oninput="((ChangeEventArgs argsBeginDate) => CheckDateRangeBegin(argsBeginDate, minBeginDate, maxBeginDate))"
+                                           @onchange="((ChangeEventArgs argsBeginDate) => CheckDateRangeBegin(argsBeginDate, minBeginDate, maxBeginDate))" />
                                 по
-                                <InputDate @bind-Value="@InputStatement!.EndDate" required="required" />
+                                <InputDate @bind-Value="@InputStatement.EndDate"
+                                           min="@minEndDate" max="@maxEndDate" required="required"
+                                           @oninput="((ChangeEventArgs argsEndDate) => CheckDateRangeEnd(argsEndDate, minBeginDate, maxEndDate))"
+                                           @onchange="((ChangeEventArgs argsEndDate) => CheckDateRangeEnd(argsEndDate, minBeginDate, maxEndDate))" />
                             </h5>
+
+
                             <center><h4>Цель посещения:</h4></center>
                             <InputSelect @bind-Value="@InputStatement!.Target">
                                 <option value="">Выберите цель</option>
-                                <option value="хочется">хочется</option>
-                                <option value="пожалуйста">пожалуйста</option>
-                                <option value="пустите">пустите</option>
+                                <option value="Экскурсия"> Экскурсия </option>
                             </InputSelect>
                         </center>
                     </div>
@@ -83,7 +92,7 @@
                                     <h5>Фамилия*:</h5>
                                 </td>
                                 <td>
-                                    <InputText id="Name" @bind-Value="InputStatement!.FirstName" class="form-control" required="required" />
+                                    <InputText id="Name" @bind-Value="InputStatement.FirstName" class="form-control" required="required" />
 
                                 </td>
                                 <td>
@@ -98,7 +107,7 @@
                                     <h5>Имя*:</h5>
                                 </td>
                                 <td>
-                                    <InputText id="Name" @bind-Value="InputStatement!.Name" class="form-control" required="required" />
+                                    <InputText id="Name" @bind-Value="InputStatement.Name" class="form-control" required="required" />
                                 </td>
                                 <td>
                                     <h5>Примечание*:</h5>
@@ -126,7 +135,7 @@
                                     <h5>Телефон:</h5>
                                 </td>
                                 <td>
-                                    <InputText @bind-Value="InputStatement!.Number" />
+                                    <input type="text" id="phoneInput" @bind="InputStatement.Number" />
                                 </td>
                                 <td>
                                     <h5>Серия*:</h5>
@@ -208,10 +217,17 @@
 
 @code {
     [SupplyParameterFromForm]
+
     public Statement InputStatement { get; set; } 
     public List<Statement> Statements { get; set; } = new();
     public string sPassport { get; set; }
     public string nPassport { get; set; }
+
+    private DateTime minBeginDate;
+    private DateTime maxBeginDate;
+    private DateTime minEndDate;
+    private DateTime maxEndDate;
+
 
     private int SelectedEmployeeId = 0;
     private int DivisionId = 1;
@@ -223,10 +239,79 @@
 
     protected override void OnInitialized()
     {
+
+        minBeginDate = DateTime.Today.AddDays(1);
+        maxBeginDate = DateTime.Today.AddDays(15);
+        minEndDate = DateTime.Today.AddDays(2); ;
+        maxEndDate = DateTime.Today.AddDays(16);
+
         InputStatement ??= new();
         Division = StatementRepository.GetDivision() ?? new List<Division>();
         Employees = StatementRepository.GetEmployees() ?? new List<Employees>();
     }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("applyPhoneMask");
+        }
+    }
+
+
+    #region Проверка на дату начала действия пропуска
+    private void CheckDateRangeBegin(ChangeEventArgs argsBeginDate, DateTime minDate, DateTime maxDate)
+    {
+        if (DateTime.TryParse(argsBeginDate.Value.ToString(), out DateTime selectedDate))
+        {
+            if (selectedDate < minDate)
+            {
+                InputStatement.BeginDate = minDate;
+            }
+            else if (selectedDate >= maxDate)
+            {
+                InputStatement.BeginDate = maxDate;
+            }
+            
+
+
+            else
+            {
+                InputStatement.BeginDate = selectedDate;
+            }
+
+
+        }
+    }
+
+    #endregion
+
+    #region Проверка на дату конец действия пропуска
+    private void CheckDateRangeEnd(ChangeEventArgs argsEndDate, DateTime minDate, DateTime maxDate)
+    {
+        if (DateTime.TryParse(argsEndDate.Value.ToString(), out DateTime selectedDate))
+        {
+            if (selectedDate < minDate)
+            {
+                InputStatement.EndDate = minDate;
+            }
+            else if (selectedDate >= maxDate)
+            {
+                InputStatement.EndDate = maxDate;
+            }
+
+
+
+            else
+            {
+                InputStatement.EndDate = selectedDate;
+            }
+
+
+        }
+    }
+
+    #endregion
 
     private async Task OnInputPhotoChange(InputFileChangeEventArgs e, int i)
     {
@@ -249,13 +334,40 @@
 
     private async void AddUser()
     {
-        InputStatement.Passport = sPassport + " " + nPassport;
-        Statements.Add(InputStatement);
+        if (InputStatement.FirstName == null && InputStatement.Name == null && InputStatement.Email == null && InputStatement.Note == null)
+        {
+
+            NotificationOptions options = new NotificationOptions
+                {
+                    Body = "Заполните все поля!",
+                };
+        }
+        else
+        {
+            InputStatement.Passport = sPassport + " " + nPassport;
+            Statements.Add(InputStatement);
+        }
+
+
     }
 
     private async void Clear()
     {
-        manager.NavigateTo("/Groups");
+        InputStatement.FirstName = string.Empty;
+        InputStatement.Name  = string.Empty;
+        InputStatement.LastName = string.Empty;
+        InputStatement.Organization = string.Empty;
+        InputStatement.Note = string.Empty;
+        InputStatement.Number = string.Empty;
+        InputStatement.Email = string.Empty;
+        sPassport = string.Empty;
+        nPassport = string.Empty;
+        DivisionId = 0;
+        SelectedEmployeeId = 1;
+        InputStatement.Target = string.Empty;
+        InputStatement.BeginDate = minBeginDate;
+        InputStatement.EndDate = minEndDate;
+        //InputStatement.Birthday = null;
     }
 
     private async Task OnInputFileChange(InputFileChangeEventArgs e, int i)
@@ -332,3 +444,12 @@
         }
     }
 }
+
+<script>
+    function applyPhoneMask() {
+        var phoneInput = document.getElementById('phoneInput');
+        var phoneMask = IMask(phoneInput, {
+            mask: '+{7}(000)000-00-00'
+        });
+    }
+</script>

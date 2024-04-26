@@ -4,8 +4,8 @@
 public class Statement : Base
 {
     public int ApplicationNumber { get; set; }
-    public DateTime BeginDate { get; set; }
-    public DateTime EndDate { get; set; }
+    public DateTime BeginDate { get; set; } = DateTime.Today.AddDays(1);
+    public DateTime EndDate { get; set; } = DateTime.Today.AddDays(1);
     public string FirstName { get; set; }
     public string Name { get; set; }
     public string LastName { get; set; }
