@@ -98,7 +98,7 @@
             }
             else
             {
-                if (Statements.VisitTime.TimeEnd == null && Statements.VisitTime.TimeOut == null)
+                if (Statements.VisitTime.TimeEnd != null && Statements.VisitTime.TimeOut == null)
                 {
                     <button class="btn btn-primary" @onclick="GoOut">Ушел</button>
                 } 

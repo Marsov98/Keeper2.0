@@ -45,53 +45,37 @@
                 <tbody>
                     @foreach (var statements in FilteredStatements)
                     {
-                        if (Select == 0)
+                        if (statements.VisitTimeId != null)
                         {
-                            <tr>
-                                @if (statements.ApplicationNumber != null)
-                                {
-                                    <td>
-                                        <a class="btn btn-primary" href="/Group/@statements.ApplicationNumber">@statements.Id</a>
-                                    </td>
-                                }
-                                else
-                                {
 
-                                    <td>
-                                        <a class="btn btn-primary" href="/Individ/@statements.Id">@statements.Id</a>
-                                    </td>
-                                }
-                                <td>
-                                    <h3>@statements.FirstName @statements.Name @statements.LastName</h3>
-                                </td>
-                                <td>
-                                    @if (statements.ApplicationNumber != null)
+                            if (Select == 0)
+                            {
+                                <tr>
+                                    @if (statements.ApplicationNumber != 0)
                                     {
-                                        <h3>@statements.ApplicationNumber</h3>
+                                        <td>
+                                            <a class="btn btn-primary" href="/Group/@statements.ApplicationNumber">@statements.Id</a>
+                                        </td>
                                     }
                                     else
                                     {
-                                        <h3>Индивидуальная</h3>
+
+                                        <td>
+                                            <a class="btn btn-primary" href="/Individ/@statements.Id">@statements.Id</a>
+                                        </td>
                                     }
-                                </td>
-                                <td>
-                                    <h3>@statements.Employees.Division.Info</h3>
-                                </td>
-                                <td>
-                                    <h3>@statements.BeginDate - @statements.EndDate</h3>
-                                </td>
-                            </tr>
-                        }
-                        if (Select == 1)
-                        {
-                            if (statements.ApplicationNumber == null)
-                            {
-                                <tr>
-                                    <td>
-                                        <a class="btn btn-primary" href="/Individ/@statements.Id">@statements.Id</a>
-                                    </td>
                                     <td>
                                         <h3>@statements.FirstName @statements.Name @statements.LastName</h3>
+                                    </td>
+                                    <td>
+                                        @if (statements.ApplicationNumber != 0)
+                                        {
+                                            <h3>@statements.ApplicationNumber</h3>
+                                        }
+                                        else
+                                        {
+                                            <h3>Индивидуальная</h3>
+                                        }
                                     </td>
                                     <td>
                                         <h3>@statements.Employees.Division.Info</h3>
@@ -101,28 +85,48 @@
                                     </td>
                                 </tr>
                             }
-                        }
-                        if (Select == 2)
-                        {
-                            if (statements.ApplicationNumber != null)
+                            if (Select == 1)
                             {
-                                <tr>
-                                    <td>
-                                        <a class="btn btn-primary" href="/Group/@statements.ApplicationNumber">@statements.Id</a>
-                                    </td>
-                                    <td>
-                                        <h3>@statements.FirstName @statements.Name @statements.LastName</h3>
-                                    </td>
-                                    <td>
-                                        <h3>@statements.ApplicationNumber</h3>
-                                    </td>
-                                    <td>
-                                        <h3>@statements.Employees.Division.Info</h3>
-                                    </td>
-                                    <td>
-                                        <h3>@statements.BeginDate - @statements.EndDate</h3>
-                                    </td>
-                                </tr>
+                                if (statements.ApplicationNumber == 0)
+                                {
+                                    <tr>
+                                        <td>
+                                            <a class="btn btn-primary" href="/Individ/@statements.Id">@statements.Id</a>
+                                        </td>
+                                        <td>
+                                            <h3>@statements.FirstName @statements.Name @statements.LastName</h3>
+                                        </td>
+                                        <td>
+                                            <h3>@statements.Employees.Division.Info</h3>
+                                        </td>
+                                        <td>
+                                            <h3>@statements.BeginDate - @statements.EndDate</h3>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            if (Select == 2)
+                            {
+                                if (statements.ApplicationNumber != 0)
+                                {
+                                    <tr>
+                                        <td>
+                                            <a class="btn btn-primary" href="/Group/@statements.ApplicationNumber">@statements.Id</a>
+                                        </td>
+                                        <td>
+                                            <h3>@statements.FirstName @statements.Name @statements.LastName</h3>
+                                        </td>
+                                        <td>
+                                            <h3>@statements.ApplicationNumber</h3>
+                                        </td>
+                                        <td>
+                                            <h3>@statements.Employees.Division.Info</h3>
+                                        </td>
+                                        <td>
+                                            <h3>@statements.BeginDate - @statements.EndDate</h3>
+                                        </td>
+                                    </tr>
+                                }
                             }
                         }
                     }

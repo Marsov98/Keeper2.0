@@ -86,15 +86,18 @@
                     }
                 </tbody>
             </table>
-            @if (Statements[0].VisitTime.TimeStart == null)
+            @if (Statements[0].VisitTimeId != null)
             {
-                <button class="btn btn-primary" @onclick="GoIn">Группа пришла</button>
-            }
-            else
-            {
-                if (Statements[0].VisitTime.TimeEnd == null)
+                if (Statements[0].VisitTime.TimeStart == null)
                 {
-                    <button class="btn btn-primary" @onclick="GoOut">Ушел</button>
+                    <button class="btn btn-primary" @onclick="GoStart">Группа пришла</button>
+                }
+                else
+                {
+                    if (Statements[0].VisitTime.TimeEnd == null)
+                    {
+                        <button class="btn btn-primary" @onclick="GoEnd">Группа ушела</button>
+                    }
                 }
             }
         </center>
@@ -125,31 +128,25 @@
         }
     }
 
-    private async Task GoIn()
-    {
-        int TimeId;
-        using var responseTime = await Http.GetAsync($"https://localhost:7244/api/Statement/CreateVisitTime");
-        if (responseTime.IsSuccessStatusCode)
-        {
-            TimeId = await responseTime.Content.ReadFromJsonAsync<int>();
-            foreach (var statement in Statements)
-            {
-                statement.VisitTimeId = TimeId;
-            }
-            using var response = await Http.PostAsJsonAsync($"https://localhost:7244/api/Statement/UpdateGroup", Statements);
-            if (response.IsSuccessStatusCode)
-            {
-                Console.WriteLine("Готово");
-            }
-            OnInitializedAsync();
-        }
-    }
-
-    private async Task GoOut()
+    private async Task GoStart()
     {
         foreach (var statement in Statements)
         {
-            statement.VisitTime.TimeOut = DateTime.Now;
+            statement.VisitTime.TimeStart = DateTime.Now;
+        }
+        using var response = await Http.PostAsJsonAsync($"https://localhost:7244/api/Statement/UpdateVisitTime", Statements[0].VisitTime);
+        if (response.IsSuccessStatusCode)
+        {
+            Console.WriteLine("Готово");
+        }
+        OnInitializedAsync();
+    }
+
+    private async Task GoEnd()
+    {
+        foreach (var statement in Statements)
+        {
+            statement.VisitTime.TimeEnd = DateTime.Now;
         }
         using var response = await Http.PostAsJsonAsync($"https://localhost:7244/api/Statement/UpdateVisitTime", Statements[0].VisitTime);
         if (response.IsSuccessStatusCode)
