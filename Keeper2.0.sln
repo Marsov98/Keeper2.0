@@ -32,6 +32,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Security terminal", "Securi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Employees terminal", "Employees terminal\Employees terminal.csproj", "{0BAEA203-8C8E-42BD-B9E9-7B2D5F431955}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Security Android", "Security Android\Security Android.csproj", "{FA1726DF-2121-41B8-AF19-A34CD07FBFAE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -72,6 +74,12 @@ Global
 		{0BAEA203-8C8E-42BD-B9E9-7B2D5F431955}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0BAEA203-8C8E-42BD-B9E9-7B2D5F431955}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0BAEA203-8C8E-42BD-B9E9-7B2D5F431955}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{FA1726DF-2121-41B8-AF19-A34CD07FBFAE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA1726DF-2121-41B8-AF19-A34CD07FBFAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA1726DF-2121-41B8-AF19-A34CD07FBFAE}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{FA1726DF-2121-41B8-AF19-A34CD07FBFAE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA1726DF-2121-41B8-AF19-A34CD07FBFAE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FA1726DF-2121-41B8-AF19-A34CD07FBFAE}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
