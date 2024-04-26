@@ -1,5 +1,164 @@
-﻿@page "/"
+﻿@page "/Home"
+@using Data.Models;
 
-<h1>Hello, world!</h1>
+@inject NavigationManager manager
 
-Welcome to your new app.
+<html>
+<head>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <a class="btn btn-primary" href="/Home">Главная</a>
+    @if (Statements == null)
+    {
+        <p><em>Загрузка...</em></p>
+    }
+    else
+    {
+        <center>
+            <div style="background: green; border-radius: 8px; margin-top: 15px">
+                <h2>Одобренные заявок</h2>
+                <InputSelect @bind-Value="Select">
+                    <option value="0">Все заявки</option>
+                    <option value="1">Индивидуальные</option>
+                    <option value="2">Групповые</option>
+                </InputSelect>
+                <h2>Поиск</h2>
+                <input style="margin-bottom: 15px" @oninput="Filter" placeholder="Поиск..." />
+            </div>
+
+
+            <table class="table">
+                <thead>
+                    <tr>
+                        <td><h3>ID</h3></td>
+                        <td><h3>ФИО</h3></td>
+                        @if (Select != 1)
+                        {
+                            <td><h3>ID группы</h3></td>
+                        }
+                        <td><h3>Подразделение</h3></td>
+                        <td align="center"><h3>Дата и время</h3></td>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var statements in FilteredStatements)
+                    {
+                        if (Select == 0)
+                        {
+                            <tr>
+                                @if (statements.ApplicationNumber != 0)
+                                {
+                                    <td>
+                                        <a class="btn btn-primary" href="/Group/@statements.ApplicationNumber">@statements.Id</a>
+                                    </td>
+                                }
+                                else
+                                {
+
+                                    <td>
+                                        <a class="btn btn-primary" href="/Individ/@statements.Id">@statements.Id</a>
+                                    </td>
+                                }
+                                <td>
+                                    <h3>@statements.FirstName @statements.Name @statements.LastName</h3>
+                                </td>
+                                <td>
+                                    @if (statements.ApplicationNumber != 0)
+                                    {
+                                        <h3>@statements.ApplicationNumber</h3>
+                                    }
+                                    else
+                                    {
+                                        <h3>Индивидуальная</h3>
+                                    }
+                                </td>
+                                <td>
+                                    <h3>@statements.Employees.Division.Info</h3>
+                                </td>
+                                <td>
+                                    <h3>@statements.BeginDate - @statements.EndDate</h3>
+                                </td>
+                            </tr>
+                        }
+                        if (Select == 1)
+                        {
+                            if (statements.ApplicationNumber == 0)
+                            {
+                                <tr>
+                                    <td>
+                                        <a class="btn btn-primary" href="/Individ/@statements.Id">@statements.Id</a>
+                                    </td>
+                                    <td>
+                                        <h3>@statements.FirstName @statements.Name @statements.LastName</h3>
+                                    </td>
+                                    <td>
+                                        <h3>@statements.Employees.Division.Info</h3>
+                                    </td>
+                                    <td>
+                                        <h3>@statements.BeginDate - @statements.EndDate</h3>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        if (Select == 2)
+                        {
+                            if (statements.ApplicationNumber != 0)
+                            {
+                                <tr>
+                                    <td>
+                                        <a class="btn btn-primary" href="/Group/@statements.ApplicationNumber">@statements.Id</a>
+                                    </td>
+                                    <td>
+                                        <h3>@statements.FirstName @statements.Name @statements.LastName</h3>
+                                    </td>
+                                    <td>
+                                        <h3>@statements.ApplicationNumber</h3>
+                                    </td>
+                                    <td>
+                                        <h3>@statements.Employees.Division.Info</h3>
+                                    </td>
+                                    <td>
+                                        <h3>@statements.BeginDate - @statements.EndDate</h3>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    }
+                </tbody>
+            </table>
+        </center>
+    }
+</body>
+</html>
+@code {
+    int Select = 0;
+    public List<Statement> Statements = new List<Statement>();
+    public List<Statement> FilteredStatements = new List<Statement>();
+    static HttpClient Http = new HttpClient();
+    public string SearchText = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var response = await Http.GetAsync($"http://192.168.1.68:5283/api/Statement/GetStatement");
+        if (response.IsSuccessStatusCode)
+        {
+            Statements = await response.Content.ReadFromJsonAsync<List<Statement>>();
+        }
+        FilteredStatements = Statements;
+    }
+
+    public void Filter(ChangeEventArgs e)
+    {
+        SearchText = e.Value.ToString();
+        FilteredStatements = Statements.Where(item => item.FirstName.ToLower().Contains(SearchText.ToLower()) ||
+                                                     item.Name.ToLower().Contains(SearchText.ToLower()) ||
+                                                     item.LastName.ToLower().Contains(SearchText.ToLower()) ||
+                                                     item.Passport.ToLower().Contains(SearchText.ToLower()) ||
+                                                     (item.FirstName.ToLower() + " " + item.Name.ToLower()).Contains(SearchText.ToLower()) ||
+                                                     (item.Name.ToLower() + " " + item.LastName.ToLower()).Contains(SearchText.ToLower()) ||
+                                                     (item.FirstName.ToLower() + " " + item.Name.ToLower() + " " + item.LastName.ToLower()).Contains(SearchText.ToLower()) ||
+                                                     (item.FirstName.ToLower() + " " + item.Name.ToLower() + " " + item.LastName.ToLower() + " " + item.Passport.ToLower()).Contains(SearchText.ToLower())).ToList();
+    }
+}

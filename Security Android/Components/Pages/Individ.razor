@@ -1,0 +1,161 @@
+﻿@page "/Individ/{id:int}"
+@using Data.Models
+
+@inject NavigationManager NavigationManager
+
+<html>
+<head>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <a class="btn btn-primary" href="/Home">Главная</a>
+    @if (Statements == null)
+    {
+        <p><em>Загрузка...</em></p>
+    }
+    else
+    {
+        <center>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <td><h3>ID</h3></td>
+                        <td><h3>Фото</h3></td>
+                        <td><h3>ФИО</h3></td>
+                        <td><h3>Сотрудник</h3></td>
+                        <td><h3>Подразделение</h3></td>
+                        <td align="center"><h3>Дата и время</h3></td>
+                        <td><h3>Телефон</h3></td>
+                        <td><h3>Email</h3></td>
+                        <td><h3>Организация</h3></td>
+                        <td><h3>Дата рождения</h3></td>
+                        <td><h3>Паспорт</h3></td>
+                        <td><h3>Примечание</h3></td>
+                        <td><h3>ЧС</h3></td>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    <tr>
+                        <td>
+                            <h3>@Statements.Id</h3>
+                        </td>
+                        <td>
+                            <a class="btn btn-primary" href="/Photo/@Statements.Id">Фото</a>
+                        </td>
+                        <td>
+                            <h3>@Statements.FirstName @Statements.Name @Statements.LastName</h3>
+                        </td>
+                        @if (Statements.Employees == null)
+                        {
+                            <td>
+                                <em>Загрузка...</em>
+                            </td>
+                            <td>
+                                <em>Загрузка...</em>
+                            </td>
+                        }
+                        else
+                        {
+                            <td>
+                                <h3>@Statements.Employees.Name</h3>
+                            </td>
+                            <td>
+                                <h3>@Statements.Employees.Division.Info</h3>
+                            </td>
+                        }
+                        <td>
+                            <h3>@Statements.BeginDate - @Statements.EndDate</h3>
+                        </td>
+                        <td>
+                            <h3>@Statements.Number</h3>
+                        </td>
+                        <td>
+                            <h3>@Statements.Email</h3>
+                        </td>
+                        <td>
+                            <h3>@Statements.Organization</h3>
+                        </td>
+                        <td>
+                            <h3>@Statements.Birthday</h3>
+                        </td>
+                        <td>
+                            <h3>@Statements.Passport <a class="btn btn-primary" href="/Passport/@Statements.Id">Скан</a></h3>
+                        </td>
+                        <td>
+                            <h3>@Statements.Note</h3>
+                        </td>
+                        <td>
+                            <input type="submit" class="btn btn-primary" @onclick="() => BlackList(Statements.Passport)" value="Ложные данные" />
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            @if (Statements.VisitTimeId == null)
+            {
+                <button class="btn btn-primary" @onclick="GoIn">Пришел</button>
+            }
+            else
+            {
+                if (Statements.VisitTime.TimeEnd != null && Statements.VisitTime.TimeOut == null)
+                {
+                    <button class="btn btn-primary" @onclick="GoOut">Ушел</button>
+                } 
+            }
+        </center>
+    }
+</body>
+</html>
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    public Statement Statements = new Statement();
+    static HttpClient Http = new HttpClient();
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var response = await Http.GetAsync($"http://192.168.1.68:5283/api/Statement/GetIndivid/{Id}");
+        if (response.IsSuccessStatusCode)
+        {
+            Statements = await response.Content.ReadFromJsonAsync<Statement>();
+        }
+    }
+
+    private async Task BlackList(string passport)
+    {
+        using var response = await Http.GetAsync($"http://192.168.1.68:5283/api/User/BlackList/{passport}");
+        if (response.IsSuccessStatusCode)
+        {
+            Console.WriteLine("Пользователь добавлен в ЧС");
+        }
+    }
+
+    private async Task GoIn()
+    {
+        int TimeId;
+        using var responseTime = await Http.GetAsync($"http://192.168.1.68:5283/api/Statement/CreateVisitTime");
+        if (responseTime.IsSuccessStatusCode)
+        {
+            TimeId = await responseTime.Content.ReadFromJsonAsync<int>();
+            Statements.VisitTimeId = TimeId;
+            using var response = await Http.PostAsJsonAsync($"http://192.168.1.68:5283/api/Statement/UpdateIndivid", Statements);
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine("Готово");
+            }
+            OnInitializedAsync();
+        }
+    }
+
+    private async Task GoOut()
+    {
+        Statements.VisitTime.TimeOut = DateTime.Now;
+        using var response = await Http.PostAsJsonAsync($"http://192.168.1.68:5283/api/Statement/UpdateVisitTime", Statements.VisitTime);
+        if (response.IsSuccessStatusCode)
+        {
+            Console.WriteLine("Готово");
+        }
+        OnInitializedAsync();
+    }
+}
