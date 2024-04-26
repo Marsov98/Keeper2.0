@@ -26,7 +26,7 @@ builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddScoped<KeeperContext>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IStatementRepository, StatementRepository>();
+builder.Services.AddScoped<StatementRepository>();
 
 builder.Services.AddMemoryCache();
 builder.Services.AddDistributedMemoryCache();// Добавляем встроенную в памяти реализацию IDistributedCache

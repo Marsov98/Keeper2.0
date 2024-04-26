@@ -7,11 +7,13 @@
 @using Microsoft.AspNetCore.Components.Forms
 @using Append.Blazor.Notifications
 @using Microsoft.AspNetCore.Components
+@using System.Text.RegularExpressions
+@using BlazorInputMask
 
 @inject INotificationService NotificationService
 @inject IHttpContextAccessor HttpContextAccessor
 @inject NavigationManager manager
-@inject IStatementRepository StatementRepository
+@inject StatementRepository StatementRepository
 @inject IWebHostEnvironment _appEnvironment
 @inject IJSRuntime JSRuntime
 
@@ -20,7 +22,8 @@
 <head>
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/imask/6.0.7/imask.min.js"></script>
+    
+    <script src="https://unpkg.com/imask@6.4.2/dist/imask.min.js"></script>
 </head>
 <body>
     <a class="btn btn-primary" href="/Home">Главная</a>
@@ -135,7 +138,7 @@
                                     <h5>Телефон:</h5>
                                 </td>
                                 <td>
-                                    <input type="text" id="phoneInput" @bind="InputStatement.Number" />
+                                    <InputMask DataMask="+7 (999) 999-99-99" @bind-Value="InputStatement.Number"/>
                                 </td>
                                 <td>
                                     <h5>Серия*:</h5>
@@ -185,21 +188,28 @@
                                     </thead>
                                     <tbody>
                                         @{
-                                            if (Statements != null)
+                                            int index = 0;
+                                            foreach (var statement in Statements)
                                             {
-                                                for (int i = 0; i < Statements.Count(); i++)
-                                                {
-                                                    var currentIndex = i;
-                                                    <tr>
-                                                        <td>@(i+1)</td>
-                                                        <td>@Statements[i].Name</td>
-                                                        <td>@Statements[i].Number</td>
-                                                        <td><InputFile OnChange="@(e => OnInputPhotoChange(e, currentIndex))" /></td>
-                                                        <td><InputFile OnChange="@(e => OnInputFileChange(e, currentIndex))" /></td>
-                                                    </tr>
-                                                }
+                                                <tr>
+                                                    <td>@(index + 1)</td>
+                                                    <td>@statement.Name</td>
+                                                    <td>@statement.Number</td>
+
+                                                    <td>
+                                                        <InputFile OnChange="@(e => OnInputPhotoChange(e, index))" />
+                                                    </td>
+                                                    <td>
+                                                        <InputFile OnChange="@(e => OnInputFileChange(e, index))" />
+                                                    </td>
+
+                                                </tr>
+                                                index++;
                                             }
                                         }
+                                        
+
+                                        
                                     </tbody>
                                 </table>
                             </div>
@@ -250,14 +260,49 @@
         Employees = StatementRepository.GetEmployees() ?? new List<Employees>();
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            await JSRuntime.InvokeVoidAsync("applyPhoneMask");
-        }
-    }
 
+
+    /*private void OnMaskChanged(InputChanged input)
+    {
+        InputStatement.Number = input.unMaskedValue;
+    }*/
+
+
+    #region Маска ввода
+
+    /*private bool isPlusSevenAdded = false;
+
+    private void ApplyMask(ChangeEventArgs e)
+    {
+        var input = e.Value.ToString();
+        var cleaned = Regex.Replace(input, @"[^\d]", "");
+        if (cleaned.Length < 12)
+        {
+            cleaned = cleaned.Substring(0, 12);
+        }
+        // Проверка длины строки перед использованием Substring
+        if (cleaned.Length < 12 && cleaned.Length > 0)
+        {
+            if (!isPlusSevenAdded)
+            {
+                InputStatement.Number = $"+7({cleaned.Substring(0, 3)}){cleaned.Substring(3, 3)}-{cleaned.Substring(6, 2)}-{cleaned.Substring(8, 2)}";
+                isPlusSevenAdded = true;
+                StateHasChanged();
+            }
+            else
+            {
+                InputStatement.Number = $"({cleaned.Substring(0, 3)}){cleaned.Substring(3, 3)}-{cleaned.Substring(6, 2)}-{cleaned.Substring(8, 2)}";
+                StateHasChanged();
+            }
+        }
+        else
+        {
+            // Обработка случая, когда строка не содержит достаточного количества символов
+            // Например, можно установить InputStatement.Number в null или в пустую строку
+            InputStatement.Number = null;
+        }
+    }*/
+    #endregion
 
     #region Проверка на дату начала действия пропуска
     private void CheckDateRangeBegin(ChangeEventArgs argsBeginDate, DateTime minDate, DateTime maxDate)
@@ -272,7 +317,7 @@
             {
                 InputStatement.BeginDate = maxDate;
             }
-            
+
 
 
             else
@@ -286,7 +331,7 @@
 
     #endregion
 
-    #region Проверка на дату конец действия пропуска
+    #region Проверка на дату конца действия пропуска
     private void CheckDateRangeEnd(ChangeEventArgs argsEndDate, DateTime minDate, DateTime maxDate)
     {
         if (DateTime.TryParse(argsEndDate.Value.ToString(), out DateTime selectedDate))
@@ -332,7 +377,7 @@
         }
     }
 
-    private async void AddUser()
+    private void AddUser()
     {
         if (InputStatement.FirstName == null && InputStatement.Name == null && InputStatement.Email == null && InputStatement.Note == null)
         {
@@ -345,29 +390,36 @@
         else
         {
             InputStatement.Passport = sPassport + " " + nPassport;
-            Statements.Add(InputStatement);
+            Statements.Add(new Statement
+                {
+                    FirstName = InputStatement.FirstName,
+                    Name = InputStatement.Name,
+                    LastName = InputStatement.LastName,
+                    Organization = InputStatement.Organization,
+                    Note = InputStatement.Note,
+                    Number = InputStatement.Number,
+                    Email = InputStatement.Email,
+                    Passport = InputStatement.Passport,
+                    BeginDate = InputStatement.BeginDate,
+                    EndDate = InputStatement.EndDate,
+                    Birthday = InputStatement.Birthday,
+                    EmployeeId = SelectedEmployeeId,
+                    Target = InputStatement.Target
+                });
         }
 
 
     }
 
-    private async void Clear()
+    private Task Clear()
     {
-        InputStatement.FirstName = string.Empty;
-        InputStatement.Name  = string.Empty;
-        InputStatement.LastName = string.Empty;
-        InputStatement.Organization = string.Empty;
-        InputStatement.Note = string.Empty;
-        InputStatement.Number = string.Empty;
-        InputStatement.Email = string.Empty;
+        InputStatement = new Statement();
         sPassport = string.Empty;
         nPassport = string.Empty;
         DivisionId = 0;
         SelectedEmployeeId = 1;
-        InputStatement.Target = string.Empty;
-        InputStatement.BeginDate = minBeginDate;
-        InputStatement.EndDate = minEndDate;
-        //InputStatement.Birthday = null;
+        return Task.CompletedTask;
+
     }
 
     private async Task OnInputFileChange(InputFileChangeEventArgs e, int i)
@@ -445,11 +497,3 @@
     }
 }
 
-<script>
-    function applyPhoneMask() {
-        var phoneInput = document.getElementById('phoneInput');
-        var phoneMask = IMask(phoneInput, {
-            mask: '+{7}(000)000-00-00'
-        });
-    }
-</script>

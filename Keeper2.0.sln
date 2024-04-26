@@ -30,9 +30,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebSite", "WebSite\WebSite.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Security terminal", "Security terminal\Security terminal.csproj", "{9C337ADE-B344-49FF-B403-7017AFFEAAE5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Employees terminal", "Employees terminal\Employees terminal.csproj", "{0BAEA203-8C8E-42BD-B9E9-7B2D5F431955}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Employees terminal", "Employees terminal\Employees terminal.csproj", "{0BAEA203-8C8E-42BD-B9E9-7B2D5F431955}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Security Android", "Security Android\Security Android.csproj", "{FA1726DF-2121-41B8-AF19-A34CD07FBFAE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Security Android", "Security Android\Security Android.csproj", "{FA1726DF-2121-41B8-AF19-A34CD07FBFAE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
