@@ -1,0 +1,162 @@
+﻿@page "/Group/{id:int}"
+@using Data.Models
+@using System.Net.Http.Json
+
+<html>
+<head>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <a class="btn btn-primary" href="/Home">Главная</a>
+    @if (Statements == null)
+    {
+        <p><em>Загрузка...</em></p>
+    }
+    else
+    {
+        <center>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <td><h3>ID</h3></td>
+                        <td><h3>Фото</h3></td>
+                        <td><h3>ID группы</h3></td>
+                        <td><h3>ФИО</h3></td>
+                        <td><h3>Сотрудник</h3></td>
+                        <td><h3>Подразделение</h3></td>
+                        <td align="center"><h3>Дата и время</h3></td>
+                        <td><h3>Телефон</h3></td>
+                        <td><h3>Email</h3></td>
+                        <td><h3>Организация</h3></td>
+                        <td><h3>Дата рождения</h3></td>
+                        <td><h3>Паспорт</h3></td>
+                        <td><h3>Примечание</h3></td>
+                        <td><h3>ЧС</h3></td>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var statements in Statements)
+                    {
+                        <tr>
+                            <td>
+                                <h3>@statements.Id</h3>
+                            </td>
+                            <td>
+                                <a class="btn btn-primary" href="/Photo/@statements.Id">Фото</a>
+                            </td>
+                            <td>
+                                <h3>@statements.ApplicationNumber</h3>
+                            </td>
+                            <td>
+                                <h3>@statements.FirstName @statements.Name @statements.LastName</h3>
+                            </td>
+                            <td>
+                                <h3>@statements.Employees.Name</h3>
+                            </td>
+                            <td>
+                                <h3>@statements.Employees.Division.Info</h3>
+                            </td>
+                            <td>
+                                <h3>@statements.BeginDate - @statements.EndDate</h3>
+                            </td>
+                            <td>
+                                <h3>@statements.Number</h3>
+                            </td>
+                            <td>
+                                <h3>@statements.Email</h3>
+                            </td>
+                            <td>
+                                <h3>@statements.Organization</h3>
+                            </td>
+                            <td>
+                                <h3>@statements.Birthday</h3>
+                            </td>
+                            <td>
+                                <h3>@statements.Passport  <a class="btn btn-primary" href="/Passport/@statements.Id">Скан</a></h3>
+                            </td>
+                            <td>
+                                <h3>@statements.Note</h3>
+                            </td>
+                            <td>
+                                <input type="submit" class="btn btn-primary" @onclick="() => BlackList(statements.Passport)" value="Ложные данные" />
+                            </td>
+                        </tr>
+
+                    }
+                </tbody>
+            </table>
+            @if (Statements[0].VisitTime.TimeStart == null)
+            {
+                <button class="btn btn-primary" @onclick="GoIn">Группа пришла</button>
+            }
+            else
+            {
+                if (Statements[0].VisitTime.TimeEnd == null)
+                {
+                    <button class="btn btn-primary" @onclick="GoOut">Ушел</button>
+                }
+            }
+        </center>
+    }
+</body>
+</html>
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    public List<Statement> Statements = new List<Statement>();
+    static HttpClient Http = new HttpClient();
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var response = await Http.GetAsync($"https://localhost:7244/api/Statement/GetGroup/{Id}");
+        if (response.IsSuccessStatusCode)
+        {
+            Statements = await response.Content.ReadFromJsonAsync<List<Statement>>();
+        }
+    }
+
+    private async Task BlackList(string passport)
+    {
+        using var response = await Http.GetAsync($"https://localhost:7244/api/User/BlackList/{passport}");
+        if (response.IsSuccessStatusCode)
+        {
+            Console.WriteLine("Пользователь добавлен в ЧС");
+        }
+    }
+
+    private async Task GoIn()
+    {
+        int TimeId;
+        using var responseTime = await Http.GetAsync($"https://localhost:7244/api/Statement/CreateVisitTime");
+        if (responseTime.IsSuccessStatusCode)
+        {
+            TimeId = await responseTime.Content.ReadFromJsonAsync<int>();
+            foreach (var statement in Statements)
+            {
+                statement.VisitTimeId = TimeId;
+            }
+            using var response = await Http.PostAsJsonAsync($"https://localhost:7244/api/Statement/UpdateGroup", Statements);
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine("Готово");
+            }
+            OnInitializedAsync();
+        }
+    }
+
+    private async Task GoOut()
+    {
+        foreach (var statement in Statements)
+        {
+            statement.VisitTime.TimeOut = DateTime.Now;
+        }
+        using var response = await Http.PostAsJsonAsync($"https://localhost:7244/api/Statement/UpdateVisitTime", Statements[0].VisitTime);
+        if (response.IsSuccessStatusCode)
+        {
+            Console.WriteLine("Готово");
+        }
+        OnInitializedAsync();
+    }
+}
+
