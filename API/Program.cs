@@ -19,13 +19,17 @@ builder.Services.AddScoped<IStatementRepository, StatementRepository>();
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("MyPolicy", builder =>
-    {
-        builder.WithOrigins("https://localhost:7177") // «амените на домен вашего Blazor WebAssembly приложени€
-               .AllowAnyHeader()
-               .AllowAnyMethod();
-    });
+    options.AddPolicy("AllowAllOriginsWithCredentials",
+        builder =>
+        {
+            builder
+            .SetIsOriginAllowed(origin => true) // –азрешает запросы с любого источника
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials(); // –азрешает передачу учетных данных
+        });
 });
+
 
 var app = builder.Build();
 
@@ -42,6 +46,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.UseCors("MyPolicy");
+app.UseCors("AllowAllOriginsWithCredentials");
 
 app.Run();
