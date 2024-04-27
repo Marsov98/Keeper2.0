@@ -9,6 +9,7 @@
 	<ItemGroup>
 		<PackageReference Include="Aspose.Cells" Version="24.1.0" />
 		<PackageReference Include="Append.Blazor.Notifications" Version="1.1.0" />
+		<PackageReference Include="BlazorInputFile" Version="0.2.0" />
 		<PackageReference Include="BlazorInputMask" Version="1.0.24" />
 		<PackageReference Include="BootstrapBlazor" Version="8.3.7" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.3">

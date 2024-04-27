@@ -8,7 +8,6 @@
 @using Append.Blazor.Notifications
 @using Microsoft.AspNetCore.Components
 @using System.Text.RegularExpressions
-@using BlazorInputMask
 
 @inject INotificationService NotificationService
 @inject IHttpContextAccessor HttpContextAccessor
@@ -18,12 +17,14 @@
 @inject IJSRuntime JSRuntime
 
 
+
 <html>
 <head>
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
+    <script src="https://unpkg.com/imask"></script>
     
-    <script src="https://unpkg.com/imask@6.4.2/dist/imask.min.js"></script>
 </head>
 <body>
     <a class="btn btn-primary" href="/Home">Главная</a>
@@ -138,7 +139,7 @@
                                     <h5>Телефон:</h5>
                                 </td>
                                 <td>
-                                    <InputMask DataMask="+7 (999) 999-99-99" @bind-Value="InputStatement.Number"/>
+                                    <input id="phoneNumberInput" type="text" @bind-value="InputStatement.Number" />
                                 </td>
                                 <td>
                                     <h5>Серия*:</h5>
@@ -152,7 +153,7 @@
                                     <h5>Email*:</h5>
                                 </td>
                                 <td>
-                                    <InputText @bind-Value="InputStatement!.Email" required="required" />
+                                    <InputText @bind-Value="InputStatement!.Email" required="required" @oninput="ValidateEmail" />
                                 </td>
                                 <td>
                                     <h5>Номер*:</h5>
@@ -222,6 +223,24 @@
             </div>
         </center>
     }
+
+    <script>
+        
+
+        window.applyPhoneMask = function (elementId) {
+            var element = document.getElementById(elementId);
+
+            if (element) {
+                var phoneMask = IMask(element, {
+                    mask: '+7 (000) 000-00-00',
+                    prepare: function (str) {
+                        return str.replace(/^8/g, '+7');
+                    }
+                });
+            }
+        };
+    </script>
+
 </body>
 </html>
 
@@ -261,48 +280,43 @@
     }
 
 
-
-    /*private void OnMaskChanged(InputChanged input)
+    #region Маска ввода для номера телефона
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        InputStatement.Number = input.unMaskedValue;
-    }*/
-
-
-    #region Маска ввода
-
-    /*private bool isPlusSevenAdded = false;
-
-    private void ApplyMask(ChangeEventArgs e)
-    {
-        var input = e.Value.ToString();
-        var cleaned = Regex.Replace(input, @"[^\d]", "");
-        if (cleaned.Length < 12)
+        if (firstRender)
         {
-            cleaned = cleaned.Substring(0, 12);
+            await JSRuntime.InvokeVoidAsync("applyPhoneMask", "phoneNumberInput");
         }
-        // Проверка длины строки перед использованием Substring
-        if (cleaned.Length < 12 && cleaned.Length > 0)
+    }
+    #endregion
+
+    #region валидация email
+    private void ValidateEmail(ChangeEventArgs e)
+    {
+        // Получаем введенное значение электронной почты
+        var email = e.Value?.ToString();
+
+        // Ваша логика проверки email
+        if (email != null && email.Contains("@") && email.Contains("."))
         {
-            if (!isPlusSevenAdded)
-            {
-                InputStatement.Number = $"+7({cleaned.Substring(0, 3)}){cleaned.Substring(3, 3)}-{cleaned.Substring(6, 2)}-{cleaned.Substring(8, 2)}";
-                isPlusSevenAdded = true;
-                StateHasChanged();
-            }
-            else
-            {
-                InputStatement.Number = $"({cleaned.Substring(0, 3)}){cleaned.Substring(3, 3)}-{cleaned.Substring(6, 2)}-{cleaned.Substring(8, 2)}";
-                StateHasChanged();
-            }
+            NotificationOptions options = new()
+                {
+                    Body = "Email is valid"
+                };
+            InputStatement.Email = email;
         }
         else
         {
-            // Обработка случая, когда строка не содержит достаточного количества символов
-            // Например, можно установить InputStatement.Number в null или в пустую строку
-            InputStatement.Number = null;
+            NotificationOptions options = new()
+                {
+                    Body = "Email is not valid"
+                };
         }
-    }*/
+    }
     #endregion
+
+
+
 
     #region Проверка на дату начала действия пропуска
     private void CheckDateRangeBegin(ChangeEventArgs argsBeginDate, DateTime minDate, DateTime maxDate)
@@ -406,6 +420,7 @@
                     EmployeeId = SelectedEmployeeId,
                     Target = InputStatement.Target
                 });
+            Clear();
         }
 
 
