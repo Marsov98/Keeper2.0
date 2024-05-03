@@ -22,7 +22,7 @@
 <head>
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    
+
     <script src="https://unpkg.com/imask@6.4.2/dist/imask.min.js"></script>
 </head>
 <body>
@@ -35,7 +35,7 @@
     {
         <center>
             <div style="width: 1030px">
-                <form method="post" class="form-signin" @onsubmit="Submit" @formname="starship-plain-form">
+                <div class="form-signin">
                     <AntiforgeryToken />
                     <h2>Форма записи на посещение мероприятия</h2>
                     <div id="block1" class="info">
@@ -138,7 +138,7 @@
                                     <h5>Телефон:</h5>
                                 </td>
                                 <td>
-                                    <InputMask DataMask="+7 (999) 999-99-99" @bind-Value="InputStatement.Number"/>
+                                    <InputMask DataMask="+7 (999) 999-99-99" @bind-Value="InputStatement.Number" />
                                 </td>
                                 <td>
                                     <h5>Серия*:</h5>
@@ -162,64 +162,58 @@
                                 </td>
                             </tr>
                         </table>
-
-                        <input type="submit" class="m-2 p-2 btn btn-primary" @onclick="AddUser" value="Добавить посетителя" />
-
-                        <div class="info">
-                            <h6>Список посетителей</h6>
-
-                            <div info_file>
-                                <label for="visits"></label>
-                                <InputFile OnChange="OnInputExelChange" accept=".xls,.pdf" />
-                                <a href='table.xls'>Скачать шаблон списка</a>
-                            </div>
-
-
-                            <div class="table">
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <th>№</th>
-                                            <th>ФИО</th>
-                                            <th>Контакты</th>
-                                            <th>Фотография</th>
-                                            <th>Pdf</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @{
-                                            int index = 0;
-                                            foreach (var statement in Statements)
-                                            {
-                                                <tr>
-                                                    <td>@(index + 1)</td>
-                                                    <td>@statement.Name</td>
-                                                    <td>@statement.Number</td>
-
-                                                    <td>
-                                                        <InputFile OnChange="@(e => OnInputPhotoChange(e, index))" />
-                                                    </td>
-                                                    <td>
-                                                        <InputFile OnChange="@(e => OnInputFileChange(e, index))" />
-                                                    </td>
-
-                                                </tr>
-                                                index++;
-                                            }
-                                        }
-                                        
-
-                                        
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <input type="submit" @onclick="Clear" value="Очистить" />
-                        <input type="submit" @onclick="Submit" value="Оформить заявку" />
                     </div>
-                </form>
+                    <input type="submit" class="m-2 p-2 btn btn-primary" @onclick="AddUser" value="Добавить посетителя" />
+                </div>
+
+                <div class="info">
+                    <h6>Список посетителей</h6>
+
+                    <div info_file>
+                        <label for="visits"></label>
+                        <InputFile OnChange="OnInputExelChange" accept=".xls,.pdf" />
+                        <a href='table.xls'>Скачать шаблон списка</a>
+                    </div>
+
+
+                    <div class="table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>№</th>
+                                    <th>ФИО</th>
+                                    <th>Контакты</th>
+                                    <th>Фотография</th>
+                                    <th>Pdf</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    if (Statements != null)
+                                    {
+                                        for (int i = 0; i < Statements.Count(); i++)
+                                        {
+                                            var currentIndex = i;
+                                            <tr>
+                                                <td>@(i + 1)</td>
+                                                <td>@Statements[i].Name</td>
+                                                <td>@Statements[i].Number</td>
+                                                <td><InputFile OnChange="@(e => OnInputPhotoChange(e, currentIndex))" /></td>
+                                                <td><InputFile OnChange="@(e => OnInputFileChange(e, currentIndex))" /></td>
+                                            </tr>
+                                        }
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <input type="submit" @onclick="Clear" value="Очистить" />
+                <input type="submit" @onclick="Submit" value="Оформить заявку" />
             </div>
+
+
         </center>
     }
 </body>
@@ -228,7 +222,7 @@
 @code {
     [SupplyParameterFromForm]
 
-    public Statement InputStatement { get; set; } 
+    public Statement InputStatement { get; set; }
     public List<Statement> Statements { get; set; } = new();
     public string sPassport { get; set; }
     public string nPassport { get; set; }
@@ -481,7 +475,7 @@
 
     private async Task Submit()
     {
-        foreach(var p in Statements)
+        foreach (var p in Statements)
         {
             p.EmployeeId = SelectedEmployeeId;
         }

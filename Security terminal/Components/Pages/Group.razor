@@ -50,39 +50,42 @@
     }
     else
     {
-        <div class="modal" style="@(isOpenPhoto ? "display:block" : "display:none")">
-            <div class="modal-content">
-                <span class="close" @onclick="CloseModalPhoto">&times;</span>
-                @if (Statements[this.i].Photo != null)
-                {
-                    var imageBase64 = Convert.ToBase64String(Statements[this.i].Photo);
-                    var imageSrc = $"data:image/jpeg;base64,{imageBase64}";
-                    <img src="@imageSrc" alt="Фото пациента" />
-                }
-                else
-                {
-                    <h3>Отсутствует фото посетителя</h3>
-                }
+        if (Statements.Count > 0)
+        {
+            <div class="modal" style="@(isOpenPhoto ? "display:block" : "display:none")">
+                <div class="modal-content">
+                    <span class="close" @onclick="CloseModalPhoto">&times;</span>
+                    @if (Statements[i].Photo != null)
+                    {
+                        var imageBase64 = Convert.ToBase64String(Statements[i].Photo);
+                        var imageSrc = $"data:image/jpeg;base64,{imageBase64}";
+                        <img src="@imageSrc" alt="Фото пациента" />
+                    }
+                    else
+                    {
+                        <h3>Отсутствует фото посетителя</h3>
+                    }
+                </div>
             </div>
-        </div>
-        <div class="modal" style="@(isOpenPDF ? "display:block" : "display:none")">
-            <div class="modal-content">
-                <span class="close" @onclick="CloseModalPDF">&times;</span>
-                @if (Statements[this.i].Pdf != null)
-                {
+            <div class="modal" style="@(isOpenPDF ? "display:block" : "display:none")">
+                <div class="modal-content">
+                    <span class="close" @onclick="CloseModalPDF">&times;</span>
+                    @if (Statements[i].Pdf != null)
+                    {
 
-                    var imageBase64 = Convert.ToBase64String(Statements[this.i].Pdf);
-                    var imageSrc = $"data:application/pdf;base64,{imageBase64}";
-                    <object data="@imageSrc" type="application/pdf" width="auto" height="auto">
-                        Ваш браузер не поддерживает встроенные PDF.
-                    </object>
-                }
-                else
-                {
-                    <h3>Отсутствует скан паспорта посетителя</h3>
-                }
+                        var imageBase64 = Convert.ToBase64String(Statements[i].Pdf);
+                        var imageSrc = $"data:application/pdf;base64,{imageBase64}";
+                        <object data="@imageSrc" type="application/pdf" width="800" height="600">
+                            Ваш браузер не поддерживает встроенные PDF.
+                        </object>
+                    }
+                    else
+                    {
+                        <h3>Отсутствует скан паспорта посетителя</h3>
+                    }
+                </div>
             </div>
-        </div>
+        }
         <center>
             <table class="table">
                 <thead>
@@ -105,54 +108,53 @@
                 </thead>
                 <tbody>
                     @{
-                        int i = 0;
-                        foreach (var statements in Statements)
+                        for (int i = 0; i < Statements.Count(); i++)
                         {
+                            var currentIndex = i;
                             <tr>
                                 <td>
-                                    <h3>@statements.Id</h3>
+                                    <h3>@Statements[i].Id</h3>
                                 </td>
                                 <td>
-                                    <button class="btn btn-primary" @onclick="@(() => OpenModalPhoto(i))">Фото</button>
+                                    <button class="btn btn-primary" @onclick="@(() => OpenModalPhoto(currentIndex))">Фото</button>
                                 </td>
                                 <td>
-                                    <h3>@statements.ApplicationNumber</h3>
+                                    <h3>@Statements[i].ApplicationNumber</h3>
                                 </td>
                                 <td>
-                                    <h3>@statements.FirstName @statements.Name @statements.LastName</h3>
+                                    <h3>@Statements[i].FirstName @Statements[i].Name @Statements[i].LastName</h3>
                                 </td>
                                 <td>
-                                    <h3>@statements.Employees.Name</h3>
+                                    <h3>@Statements[i].Employees.Name</h3>
                                 </td>
                                 <td>
-                                    <h3>@statements.Employees.Division.Info</h3>
+                                    <h3>@Statements[i].Employees.Division.Info</h3>
                                 </td>
                                 <td>
-                                    <h3>@statements.BeginDate - @statements.EndDate</h3>
+                                    <h3>@Statements[i].BeginDate - @Statements[i].EndDate</h3>
                                 </td>
                                 <td>
-                                    <h3>@statements.Number</h3>
+                                    <h3>@Statements[i].Number</h3>
                                 </td>
                                 <td>
-                                    <h3>@statements.Email</h3>
+                                    <h3>@Statements[i].Email</h3>
                                 </td>
                                 <td>
-                                    <h3>@statements.Organization</h3>
+                                    <h3>@Statements[i].Organization</h3>
                                 </td>
                                 <td>
-                                    <h3>@statements.Birthday</h3>
+                                    <h3>@Statements[i].Birthday</h3>
                                 </td>
                                 <td>
-                                    <h3>@statements.Passport  <button class="btn btn-primary" @onclick="@(() => OpenModalPDF(i))">Скан</button></h3>
+                                    <h3>@Statements[i].Passport  <button class="btn btn-primary" @onclick="@(() => OpenModalPDF(currentIndex))">Скан</button></h3>
                                 </td>
                                 <td>
-                                    <h3>@statements.Note</h3>
+                                    <h3>@Statements[i].Note</h3>
                                 </td>
                                 <td>
-                                    <input type="submit" class="btn btn-primary" @onclick="() => BlackList(statements.Passport)" value="Ложные данные" />
+                                    <input type="submit" class="btn btn-primary" @onclick="() => BlackList(Statements[i].Passport)" value="Ложные данные" />
                                 </td>
                             </tr>
-                            i++;
                         }
                     }
                 </tbody>
@@ -163,7 +165,7 @@
             }
             else
             {
-                if (Statements[0].VisitTime.TimeEnd == null && Statements[0].VisitTime.TimeOut == null)
+                if (Statements[0].VisitTime.TimeEnd == null && Statements[0].VisitTime.TimeOut != null)
                 {
                     <button class="btn btn-primary" @onclick="GoOut">Ушел</button>
                 }

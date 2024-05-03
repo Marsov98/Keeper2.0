@@ -85,6 +85,10 @@ namespace Service.Repositories
             for (int i = 0; i < Count; i++)
             {
                 Statement[i].Employees = Employees[Statement[i].EmployeeId - 1];
+                if (Statement[i].VisitTimeId != null)
+                {
+                    Statement[i].VisitTime = GetVisitTimeById(Statement[i].VisitTimeId);
+                }
             }
             return Statement;
         }
@@ -107,7 +111,7 @@ namespace Service.Repositories
         {
             int i = 0;
             var NextApplicationNumber = _db.Statement.Max(u => (int)u.ApplicationNumber);
-            if (i < NextApplicationNumber)
+            if (i <= NextApplicationNumber)
                 i = NextApplicationNumber + 1;
             return (int)i ;
         }

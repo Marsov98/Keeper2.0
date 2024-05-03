@@ -47,7 +47,7 @@
                         if (Select == 0)
                         {
                             <tr>
-                                @if (statements.ApplicationNumber != null)
+                                @if (statements.ApplicationNumber != 0)
                                 {
                                     <td>
                                         <a class="btn btn-primary" href="/Group/@statements.ApplicationNumber">@statements.Id</a>
@@ -64,7 +64,7 @@
                                     <h3>@statements.FirstName @statements.Name @statements.LastName</h3>
                                 </td>
                                 <td>
-                                    @if (statements.ApplicationNumber != null)
+                                    @if (statements.ApplicationNumber != 0)
                                     {
                                         <h3>@statements.ApplicationNumber</h3>
                                     }
@@ -86,7 +86,7 @@
                         }
                         if (Select == 1)
                         {
-                            if (statements.ApplicationNumber == null)
+                            if (statements.ApplicationNumber == 0)
                             {
                                 <tr>
                                     <td>
@@ -109,7 +109,7 @@
                         }
                         if (Select == 2)
                         {
-                            if (statements.ApplicationNumber != null)
+                            if (statements.ApplicationNumber != 0)
                             {
                                 <tr>
                                     <td>
