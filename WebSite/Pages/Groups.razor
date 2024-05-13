@@ -23,10 +23,16 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 
-    <script src="https://unpkg.com/imask@6.4.2/dist/imask.min.js"></script>
+    <!-- Подключение jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js" async></script>
+    <!-- Подключение Inputmask -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.inputmask/5.0.6/jquery.inputmask.min.js" async></script>
+
+    
 </head>
+
 <body>
-    <a class="btn btn-primary" href="/Home">Главная</a>
+    <a class="btn btn-primary" href="/">Главная</a>
     @if (Division == null && Employees == null)
     {
         <p><em>Загрузка...</em></p>
@@ -42,17 +48,14 @@
                         <center>
                             <h3>Информация для пропуска</h3>
                             <center><h4>Срок действия заявки:</h4></center>
+
                             <h5>
                                 C*
-                                <InputDate @bind-Value="@InputStatement.BeginDate"
-                                           min="@minBeginDate" max="@maxBeginDate" required="required"
-                                           @oninput="((ChangeEventArgs argsBeginDate) => CheckDateRangeBegin(argsBeginDate, minBeginDate, maxBeginDate))"
-                                           @onchange="((ChangeEventArgs argsBeginDate) => CheckDateRangeBegin(argsBeginDate, minBeginDate, maxBeginDate))" />
+                                <InputDate @bind-Value="@InputStatement!.BeginDate" id="startDate" min="<?= date('Y-m-d', strtotime('+1 day')) ?>" oninput="validateStartDate()" required="required" />
+                                
                                 по
-                                <InputDate @bind-Value="@InputStatement.EndDate"
-                                           min="@minEndDate" max="@maxEndDate" required="required"
-                                           @oninput="((ChangeEventArgs argsEndDate) => CheckDateRangeEnd(argsEndDate, minBeginDate, maxEndDate))"
-                                           @onchange="((ChangeEventArgs argsEndDate) => CheckDateRangeEnd(argsEndDate, minBeginDate, maxEndDate))" />
+                                <InputDate @bind-Value="@InputStatement!.EndDate" id="endDate" max="<?= date('Y-m-d', strtotime('+15 days')) ?>" oninput="validateEndDate()" required="required" />
+                                
                             </h5>
 
 
@@ -138,7 +141,7 @@
                                     <h5>Телефон:</h5>
                                 </td>
                                 <td>
-                                    <InputMask DataMask="+7 (999) 999-99-99" @bind-Value="InputStatement.Number" />
+                                    <InputText id="phone" @bind-Value="InputStatement.Number" required="required" />
                                 </td>
                                 <td>
                                     <h5>Серия*:</h5>
@@ -216,6 +219,79 @@
 
         </center>
     }
+
+
+    <script>
+        $(document).ready(function () {
+            $('#phone').inputmask({
+                mask: "+7(999) 999-99-99",
+                definitions: {
+                    9: {
+                        validator: "[0-9]",
+                        casing: "lower"
+                    }
+                },
+                placeholder: "_",
+                showPlaceholder: false
+            });
+        });
+
+    </script>
+
+
+    <script>
+        function validateStartDate() {
+            var startDateInput = document.getElementById('startDate');
+            var endDateInput = document.getElementById('endDate');
+
+            var minStartDate = new Date();
+            minStartDate.setDate(minStartDate.getDate() + 1); // Находим следующий день от текущей даты
+
+            var selectedStartDate = new Date(startDateInput.value);
+
+            if (selectedStartDate < minStartDate) {
+                startDateInput.value = minStartDate.toISOString().split('T')[0];
+                selectedStartDate = minStartDate;
+            }
+
+            validateEndDate(); // Вызываем проверку для даты окончания после изменения даты начала
+        }
+
+        function validateEndDate() {
+            var startDateInput = document.getElementById('startDate');
+            var endDateInput = document.getElementById('endDate');
+
+            var minEndDate = new Date(startDateInput.value);
+            minEndDate.setDate(minEndDate.getDate() + 1); // Дата начала плюс 1 день
+
+            var maxEndDate = new Date(startDateInput.value);
+            maxEndDate.setDate(maxEndDate.getDate() + 15); // Находим через 15 дней от даты начала
+
+            var selectedStartDate = new Date(startDateInput.value);
+            var selectedEndDate = new Date(endDateInput.value);
+
+            if (selectedEndDate < selectedStartDate) {
+                endDateInput.value = startDateInput.value;
+                selectedEndDate = new Date(startDateInput.value);
+            } else if (selectedEndDate > maxEndDate) {
+                endDateInput.value = maxEndDate.toISOString().split('T')[0];
+                selectedEndDate = maxEndDate;
+            }
+
+            // Проверяем, что разница между датами не более 15 дней
+            var timeDiff = Math.abs(selectedEndDate.getTime() - selectedStartDate.getTime());
+            var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
+            if (diffDays > 15) {
+                document.getElementById('endDateError').innerText = 'Длительность заявки не может превышать 15 дней.';
+                endDateInput.value = maxEndDate.toISOString().split('T')[0];
+            } else {
+                document.getElementById('endDateError').innerText = '';
+            }
+        }
+    </script>
+
+
+
 </body>
 </html>
 
@@ -255,102 +331,7 @@
     }
 
 
-
-    /*private void OnMaskChanged(InputChanged input)
-    {
-        InputStatement.Number = input.unMaskedValue;
-    }*/
-
-
-    #region Маска ввода
-
-    /*private bool isPlusSevenAdded = false;
-
-    private void ApplyMask(ChangeEventArgs e)
-    {
-        var input = e.Value.ToString();
-        var cleaned = Regex.Replace(input, @"[^\d]", "");
-        if (cleaned.Length < 12)
-        {
-            cleaned = cleaned.Substring(0, 12);
-        }
-        // Проверка длины строки перед использованием Substring
-        if (cleaned.Length < 12 && cleaned.Length > 0)
-        {
-            if (!isPlusSevenAdded)
-            {
-                InputStatement.Number = $"+7({cleaned.Substring(0, 3)}){cleaned.Substring(3, 3)}-{cleaned.Substring(6, 2)}-{cleaned.Substring(8, 2)}";
-                isPlusSevenAdded = true;
-                StateHasChanged();
-            }
-            else
-            {
-                InputStatement.Number = $"({cleaned.Substring(0, 3)}){cleaned.Substring(3, 3)}-{cleaned.Substring(6, 2)}-{cleaned.Substring(8, 2)}";
-                StateHasChanged();
-            }
-        }
-        else
-        {
-            // Обработка случая, когда строка не содержит достаточного количества символов
-            // Например, можно установить InputStatement.Number в null или в пустую строку
-            InputStatement.Number = null;
-        }
-    }*/
-    #endregion
-
-    #region Проверка на дату начала действия пропуска
-    private void CheckDateRangeBegin(ChangeEventArgs argsBeginDate, DateTime minDate, DateTime maxDate)
-    {
-        if (DateTime.TryParse(argsBeginDate.Value.ToString(), out DateTime selectedDate))
-        {
-            if (selectedDate < minDate)
-            {
-                InputStatement.BeginDate = minDate;
-            }
-            else if (selectedDate >= maxDate)
-            {
-                InputStatement.BeginDate = maxDate;
-            }
-
-
-
-            else
-            {
-                InputStatement.BeginDate = selectedDate;
-            }
-
-
-        }
-    }
-
-    #endregion
-
-    #region Проверка на дату конца действия пропуска
-    private void CheckDateRangeEnd(ChangeEventArgs argsEndDate, DateTime minDate, DateTime maxDate)
-    {
-        if (DateTime.TryParse(argsEndDate.Value.ToString(), out DateTime selectedDate))
-        {
-            if (selectedDate < minDate)
-            {
-                InputStatement.EndDate = minDate;
-            }
-            else if (selectedDate >= maxDate)
-            {
-                InputStatement.EndDate = maxDate;
-            }
-
-
-
-            else
-            {
-                InputStatement.EndDate = selectedDate;
-            }
-
-
-        }
-    }
-
-    #endregion
+    
 
     private async Task OnInputPhotoChange(InputFileChangeEventArgs e, int i)
     {

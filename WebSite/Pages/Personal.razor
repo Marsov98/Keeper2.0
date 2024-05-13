@@ -14,8 +14,8 @@
 
 <html>
 <head>
-    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    
+
 </head>
 <body>
     <a class="btn btn-primary" href="/">Главная</a>
@@ -36,16 +36,17 @@
                             <center><h4>Срок действия заявки:</h4></center>
                             <h5>
                                 C*
-                                <InputDate @bind-Value="@InputStatement!.BeginDate" required="required" />
+                                <InputDate @bind-Value="@InputStatement!.BeginDate" id="startDate" min="<?= date('Y-m-d', strtotime('+1 day')) ?>" oninput="validateStartDate()" required="required" />
+
                                 по
-                                <InputDate @bind-Value="@InputStatement!.EndDate" required="required" />
+                                <InputDate @bind-Value="@InputStatement!.EndDate" id="endDate" max="<?= date('Y-m-d', strtotime('+15 days')) ?>" oninput="validateEndDate()" required="required" />
+
                             </h5>
                             <center><h4>Цель посещения:</h4></center>
                             <InputSelect @bind-Value="@InputStatement!.Target">
                                 <option value="">Выберите цель</option>
-                                <option value="хочется">хочется</option>
-                                <option value="пожалуйста">пожалуйста</option>
-                                <option value="пустите">пустите</option>
+                                <option value="Экскурсия">хочется</option>
+                                
                             </InputSelect>
                         </center>
                     </div>
@@ -116,7 +117,7 @@
                                     <h5>Дата рождения*:</h5>
                                 </td>
                                 <td>
-                                    <InputDate @bind-Value="InputStatement!.Birthday" required="required" />
+                                    <InputDate @bind-Value="InputStatement!.Birthday" min="1920-01-01" required="required" />
                                 </td>
                             </tr>
                             <tr>
@@ -124,7 +125,7 @@
                                     <h5>Телефон:</h5>
                                 </td>
                                 <td>
-                                    <InputText @bind-Value="InputStatement!.Number" />
+                                    <InputText @bind-Value="InputStatement.Number" id="phone" required="required" />
                                 </td>
                                 <td>
                                     <h5>Серия*:</h5>
@@ -172,6 +173,76 @@
             </div>
         </center>
     }
+
+
+    <script>
+        $(document).ready(function () {
+            $('#phone').inputmask({
+                mask: "+7(999) 999-99-99",
+                definitions: {
+                    9: {
+                        validator: "[0-9]",
+                        casing: "lower"
+                    }
+                },
+                placeholder: "_",
+                showPlaceholder: false
+            });
+        });
+
+    </script>
+
+    <script>
+        function validateStartDate() {
+            var startDateInput = document.getElementById('startDate');
+            var endDateInput = document.getElementById('endDate');
+
+            var minStartDate = new Date();
+            minStartDate.setDate(minStartDate.getDate() + 1); // Находим следующий день от текущей даты
+
+            var selectedStartDate = new Date(startDateInput.value);
+
+            if (selectedStartDate < minStartDate) {
+                startDateInput.value = minStartDate.toISOString().split('T')[0];
+                selectedStartDate = minStartDate;
+            }
+
+            validateEndDate(); // Вызываем проверку для даты окончания после изменения даты начала
+        }
+
+        function validateEndDate() {
+            var startDateInput = document.getElementById('startDate');
+            var endDateInput = document.getElementById('endDate');
+
+            var minEndDate = new Date(startDateInput.value);
+            minEndDate.setDate(minEndDate.getDate() + 1); // Дата начала плюс 1 день
+
+            var maxEndDate = new Date(startDateInput.value);
+            maxEndDate.setDate(maxEndDate.getDate() + 15); // Находим через 15 дней от даты начала
+
+            var selectedStartDate = new Date(startDateInput.value);
+            var selectedEndDate = new Date(endDateInput.value);
+
+            if (selectedEndDate < selectedStartDate) {
+                endDateInput.value = startDateInput.value;
+                selectedEndDate = new Date(startDateInput.value);
+            } else if (selectedEndDate > maxEndDate) {
+                endDateInput.value = maxEndDate.toISOString().split('T')[0];
+                selectedEndDate = maxEndDate;
+            }
+
+            // Проверяем, что разница между датами не более 15 дней
+            var timeDiff = Math.abs(selectedEndDate.getTime() - selectedStartDate.getTime());
+            var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
+            if (diffDays > 15) {
+                document.getElementById('endDateError').innerText = 'Длительность заявки не может превышать 15 дней.';
+                endDateInput.value = maxEndDate.toISOString().split('T')[0];
+            } else {
+                document.getElementById('endDateError').innerText = '';
+            }
+        }
+    </script>
+
 </body>
 </html>
 
