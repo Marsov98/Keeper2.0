@@ -1,6 +1,4 @@
 ﻿using Data.Models;
-
-
 public class Statement : Base
 {
     public int ApplicationNumber { get; set; }
